@@ -3,8 +3,23 @@ import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AI Video Developer Starter Kit | fal.ai",
-  description: "Open-source AI video editor built for developers.",
+  title: "Mozoria - AI Storyboard Studio for Anime Creators",
+  description:
+    "Turn scripts into anime shot by shot. AI-powered storyboard editor with character consistency, video generation, and voiceover. All in one place.",
+  metadataBase: new URL("https://mozoria.com"),
+  openGraph: {
+    title: "Mozoria - AI Storyboard Studio for Anime Creators",
+    description:
+      "Turn scripts into anime shot by shot. AI-powered storyboard editor with character consistency, video generation, and voiceover.",
+    siteName: "Mozoria",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Mozoria - AI Storyboard Studio for Anime Creators",
+    description:
+      "Turn scripts into anime shot by shot. AI storyboard editor with character consistency, video generation, and voiceover.",
+  },
 };
 
 export default function RootLayout({

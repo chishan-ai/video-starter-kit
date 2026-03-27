@@ -1,6 +1,6 @@
 import Link from "next/link";
+import { Film } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Video } from "lucide-react";
 
 export default function Header() {
   return (
@@ -8,8 +8,8 @@ export default function Header() {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex flex-1">
           <Link href="/" className="flex items-center space-x-2">
-            <Video className="w-6 h-6" />
-            <span className="font-semibold">fal.ai</span>
+            <Film className="w-6 h-6 text-purple-400" />
+            <span className="font-bold text-lg">Mozoria</span>
           </Link>
         </div>
 
@@ -21,23 +21,22 @@ export default function Header() {
             Features
           </Link>
           <Link
-            href="#community"
+            href="#pricing"
             className="text-sm text-gray-400 hover:text-white transition-colors"
           >
-            Community
-          </Link>
-          <Link
-            href="https://github.com/fal-ai-community/video-starter-kit"
-            className="text-sm text-gray-400 hover:text-white transition-colors"
-          >
-            GitHub
+            Pricing
           </Link>
         </nav>
 
         <div className="flex flex-1 justify-end items-center space-x-4">
-          <Link href="/app">
-            <Button className="bg-white text-black hover:bg-gray-200">
-              Try it now
+          <Link href="/login">
+            <Button variant="ghost" className="text-gray-300 hover:text-white">
+              Log in
+            </Button>
+          </Link>
+          <Link href="/login">
+            <Button className="bg-purple-600 text-white hover:bg-purple-500">
+              Get Started
             </Button>
           </Link>
         </div>

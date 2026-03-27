@@ -74,6 +74,8 @@ export const users = pgTable("users", {
   creditsBalance: integer("credits_balance").notNull().default(100),
   plan: planEnum("plan").notNull().default("free"),
   stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  planExpiresAt: timestamp("plan_expires_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -131,6 +133,8 @@ export const shots = pgTable("shots", {
   characterIds: jsonb("character_ids").$type<string[]>().notNull().default([]),
   status: shotStatusEnum("status").notNull().default("pending"),
   selectedVersionId: uuid("selected_version_id"),
+  voiceoverText: text("voiceover_text"),
+  ttsAudioUrl: text("tts_audio_url"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

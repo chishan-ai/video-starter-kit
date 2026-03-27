@@ -10,6 +10,7 @@ interface Shot {
   cameraType: string;
   status: string;
   selectedVersionId: string | null;
+  ttsAudioUrl: string | null;
 }
 
 interface StoryboardGridProps {

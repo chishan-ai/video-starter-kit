@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { shots, shotVersions } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { createClient } from "@/lib/supabase/server";
-import { falServer } from "@/lib/fal-server";
+import { falServer, isTtsModel } from "@/lib/fal-server";
 import { z } from "zod";
 
 const statusSchema = z.object({
@@ -44,6 +44,28 @@ export async function POST(request: Request) {
       // Fetch the result
       const result = await falServer.queue.result(model, { requestId });
       const data = result.data as Record<string, unknown>;
+
+      // Handle TTS results
+      if (isTtsModel(model.replace("fal-ai/", "")) || model.includes("tts")) {
+        const audioUrl =
+          (data.audio_url as { url: string } | undefined)?.url ??
+          (data.audio as { url: string } | undefined)?.url ??
+          (data.audio_url as string | undefined);
+
+        if (audioUrl) {
+          await db
+            .update(shots)
+            .set({ ttsAudioUrl: typeof audioUrl === "string" ? audioUrl : String(audioUrl) })
+            .where(eq(shots.id, shotId));
+
+          return NextResponse.json({
+            status: "completed",
+            audioUrl,
+          });
+        }
+      }
+
+      // Handle video results
       const video = data.video as
         | { url: string; file_size?: number }
         | undefined;
@@ -55,7 +77,7 @@ export async function POST(request: Request) {
           .values({
             shotId,
             videoUrl: video.url,
-            prompt: "", // Will be enriched
+            prompt: "",
             model,
             externalTaskId: requestId,
           })

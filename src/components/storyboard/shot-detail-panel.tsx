@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useGenerateVideo } from "@/hooks/use-project";
+import { Mic, Volume2 } from "lucide-react";
+import { useGenerateVideo, useGenerateTTS } from "@/hooks/use-project";
 
 interface Shot {
   id: string;
@@ -13,6 +14,8 @@ interface Shot {
   characterIds: string[];
   status: string;
   selectedVersionId: string | null;
+  voiceoverText: string | null;
+  ttsAudioUrl: string | null;
 }
 
 interface ShotDetailPanelProps {
@@ -29,9 +32,14 @@ export function ShotDetailPanel({
   onUpdate,
 }: ShotDetailPanelProps) {
   const [description, setDescription] = useState(shot.description);
+  const [voiceoverText, setVoiceoverText] = useState(
+    shot.voiceoverText ?? "",
+  );
   const generateVideo = useGenerateVideo(projectId, shot.id);
+  const generateTTS = useGenerateTTS(projectId, shot.id);
 
   const isDirty = description !== shot.description;
+  const isVoiceoverDirty = voiceoverText !== (shot.voiceoverText ?? "");
 
   function handleSave() {
     if (isDirty) {
@@ -117,6 +125,63 @@ export function ShotDetailPanel({
             <span>3s</span>
             <span>10s</span>
           </div>
+        </div>
+
+        {/* Voiceover */}
+        <div>
+          <label className="mb-1 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+            <Mic className="h-3 w-3" />
+            Voiceover
+          </label>
+          <textarea
+            value={voiceoverText}
+            onChange={(e) => setVoiceoverText(e.target.value)}
+            rows={3}
+            placeholder="Enter narration text for this shot..."
+            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+          <div className="mt-1.5 flex items-center gap-2">
+            {isVoiceoverDirty && (
+              <button
+                type="button"
+                onClick={() =>
+                  onUpdate({ voiceoverText: voiceoverText || null } as Partial<Shot>)
+                }
+                className="rounded bg-secondary px-2 py-1 text-xs text-secondary-foreground hover:bg-secondary/80"
+              >
+                Save Text
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() =>
+                generateTTS.mutate({
+                  text: voiceoverText || undefined,
+                })
+              }
+              disabled={!voiceoverText || generateTTS.isPending}
+              className="rounded bg-primary px-2 py-1 text-xs text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            >
+              {generateTTS.isPending
+                ? "Generating..."
+                : "Generate Voice — 2 credits"}
+            </button>
+          </div>
+          {shot.ttsAudioUrl && (
+            <div className="mt-2 flex items-center gap-2 rounded-md border border-border bg-secondary/30 p-2">
+              <Volume2 className="h-4 w-4 text-muted-foreground" />
+              <audio
+                src={shot.ttsAudioUrl}
+                controls
+                className="h-8 flex-1"
+              />
+            </div>
+          )}
+          {generateTTS.error && (
+            <p className="mt-1 text-xs text-red-500">
+              {generateTTS.error.message}
+            </p>
+          )}
         </div>
 
         {/* Generate buttons */}

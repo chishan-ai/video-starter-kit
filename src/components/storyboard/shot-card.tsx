@@ -1,5 +1,6 @@
 "use client";
 
+import { Mic } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Shot {
@@ -10,6 +11,7 @@ interface Shot {
   cameraType: string;
   status: string;
   selectedVersionId: string | null;
+  ttsAudioUrl: string | null;
 }
 
 interface ShotCardProps {
@@ -78,6 +80,13 @@ export function ShotCard({
         <span className="absolute bottom-1 right-1 rounded bg-black/60 px-1 py-0.5 text-[10px] text-white">
           {shot.duration}s
         </span>
+
+        {/* Audio indicator */}
+        {shot.ttsAudioUrl && (
+          <span className="absolute bottom-1 left-1 rounded bg-blue-500/80 p-0.5">
+            <Mic className="h-2.5 w-2.5 text-white" />
+          </span>
+        )}
 
         {/* Generating animation */}
         {shot.status === "generating" && (

@@ -17,3 +17,19 @@ export type VideoModelKey = keyof typeof VIDEO_MODELS;
 export function getModelEndpoint(key: VideoModelKey): string {
   return VIDEO_MODELS[key];
 }
+
+// TTS model mapping
+export const TTS_MODELS = {
+  "f5-tts": "fal-ai/f5-tts",
+  "playht-v3": "fal-ai/playht/tts/v3",
+} as const;
+
+export type TtsModelKey = keyof typeof TTS_MODELS;
+
+export function getTtsEndpoint(key: TtsModelKey): string {
+  return TTS_MODELS[key];
+}
+
+export function isTtsModel(model: string): model is TtsModelKey {
+  return model in TTS_MODELS;
+}

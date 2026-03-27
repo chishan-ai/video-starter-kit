@@ -26,6 +26,8 @@ interface Shot {
   characterIds: string[];
   status: string;
   selectedVersionId: string | null;
+  voiceoverText: string | null;
+  ttsAudioUrl: string | null;
   createdAt: string;
 }
 
@@ -160,11 +162,40 @@ export function useCheckGenerationStatus() {
         status: string;
         version?: ShotVersion;
         videoUrl?: string;
+        audioUrl?: string;
         error?: string;
       }>("/api/generation/status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       }),
+  });
+}
+
+export function useGenerateTTS(projectId: string, shotId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { text?: string; model?: string }) =>
+      fetchJson<{
+        requestId: string;
+        shotId: string;
+        model: string;
+        creditsUsed: number;
+        balance: number;
+      }>(`/api/projects/${projectId}/shots/${shotId}/generate-tts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ["projects", projectId, "shots"] }),
+  });
+}
+
+export function useCreditsBalance() {
+  return useQuery<{ balance: number }>({
+    queryKey: ["credits"],
+    queryFn: () => fetchJson("/api/credits"),
+    staleTime: 10_000,
   });
 }

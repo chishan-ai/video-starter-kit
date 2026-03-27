@@ -39,11 +39,12 @@ export async function updateSession(request: NextRequest) {
     (path) => request.nextUrl.pathname === path,
   );
   const isApiAuth = request.nextUrl.pathname.startsWith("/api/auth");
+  const isWebhook = request.nextUrl.pathname.startsWith("/api/webhooks/");
   const isStaticAsset =
     request.nextUrl.pathname.startsWith("/_next") ||
     request.nextUrl.pathname.includes(".");
 
-  if (!user && !isPublicPath && !isApiAuth && !isStaticAsset) {
+  if (!user && !isPublicPath && !isApiAuth && !isWebhook && !isStaticAsset) {
     // API routes should return 401 JSON, not redirect
     if (request.nextUrl.pathname.startsWith("/api/")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

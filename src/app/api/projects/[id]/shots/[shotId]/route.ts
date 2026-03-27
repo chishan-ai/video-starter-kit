@@ -15,6 +15,8 @@ const updateShotSchema = z.object({
   order: z.number().int().optional(),
   status: z.enum(["pending", "generating", "completed", "failed"]).optional(),
   selectedVersionId: z.string().nullable().optional(),
+  voiceoverText: z.string().nullable().optional(),
+  ttsAudioUrl: z.string().nullable().optional(),
 });
 
 async function verifyProjectOwnership(projectId: string, userId: string) {

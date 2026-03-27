@@ -2,6 +2,8 @@ import Header from "@/components/landing-header";
 import Hero from "@/components/landing-hero";
 import Features from "@/components/landing-features";
 import Community from "@/components/landing-community";
+import { PricingSection } from "@/components/landing/pricing-section";
+import { CtaSection } from "@/components/landing/cta-section";
 import Footer from "@/components/landing-footer";
 
 export default function IndexPage() {
@@ -10,8 +12,10 @@ export default function IndexPage() {
       <Header />
       <main className="lg:pt-48">
         <Hero />
-        <Features />
         <Community />
+        <Features />
+        <PricingSection />
+        <CtaSection />
       </main>
       <Footer />
     </div>

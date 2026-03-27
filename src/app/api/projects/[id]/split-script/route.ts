@@ -73,6 +73,7 @@ export async function POST(
         duration: shot.duration,
         cameraType: shot.cameraType,
         characterIds: shot.characterIds,
+        voiceoverText: shot.voiceover,
       })),
     )
     .returning();

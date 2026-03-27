@@ -12,6 +12,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ScriptEditor } from "./script-editor";
 import { StoryboardGrid } from "./storyboard-grid";
 import { ShotDetailPanel } from "./shot-detail-panel";
+import { CreditsBadge } from "@/components/billing/credits-badge";
 
 interface ProjectEditorProps {
   projectId: string;
@@ -102,6 +103,7 @@ export function ProjectEditor({ projectId }: ProjectEditorProps) {
         </div>
 
         <div className="flex items-center gap-3">
+          <CreditsBadge />
           {shots.length > 0 && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span>

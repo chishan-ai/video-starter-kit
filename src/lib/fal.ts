@@ -3,7 +3,10 @@
 import { createFalClient } from "@fal-ai/client";
 
 export const fal = createFalClient({
-  credentials: () => localStorage?.getItem("falKey") as string,
+  credentials: () =>
+    (typeof window !== "undefined"
+      ? localStorage?.getItem("falKey")
+      : null) as string,
   proxyUrl: "/api/fal",
 });
 
