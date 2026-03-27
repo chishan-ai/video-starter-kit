@@ -135,6 +135,8 @@ export const shots = pgTable("shots", {
   selectedVersionId: uuid("selected_version_id"),
   voiceoverText: text("voiceover_text"),
   ttsAudioUrl: text("tts_audio_url"),
+  pendingRequestId: text("pending_request_id"),
+  pendingModel: text("pending_model"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

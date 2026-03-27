@@ -3,7 +3,14 @@ import { db } from "@/db";
 import { shots, shotVersions } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { createClient } from "@/lib/supabase/server";
-import { falServer, isTtsModel } from "@/lib/fal-server";
+import {
+  falServer,
+  isTtsModel,
+  VIDEO_MODELS,
+  TTS_MODELS,
+  type VideoModelKey,
+  type TtsModelKey,
+} from "@/lib/fal-server";
 import { z } from "zod";
 
 const statusSchema = z.object({
@@ -34,15 +41,21 @@ export async function POST(request: Request) {
 
   const { requestId, shotId, model } = parsed.data;
 
+  // Resolve internal model key to fal.ai endpoint if needed
+  const endpoint =
+    (VIDEO_MODELS as Record<string, string>)[model] ??
+    (TTS_MODELS as Record<string, string>)[model] ??
+    model;
+
   try {
-    const status = await falServer.queue.status(model, {
+    const status = await falServer.queue.status(endpoint, {
       requestId,
       logs: false,
     });
 
     if (status.status === "COMPLETED") {
       // Fetch the result
-      const result = await falServer.queue.result(model, { requestId });
+      const result = await falServer.queue.result(endpoint, { requestId });
       const data = result.data as Record<string, unknown>;
 
       // Handle TTS results

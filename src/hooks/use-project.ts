@@ -72,6 +72,8 @@ export function useShots(projectId: string) {
     queryKey: ["projects", projectId, "shots"],
     queryFn: () => fetchJson(`/api/projects/${projectId}/shots`),
     enabled: !!projectId,
+    refetchInterval: (query) =>
+      query.state.data?.some((s) => s.status === "generating") ? 5000 : false,
   });
 }
 

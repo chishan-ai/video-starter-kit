@@ -18,6 +18,8 @@ const generateSchema = z.object({
     .default("vidu-q3-i2v"),
 });
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 // POST /api/projects/:id/shots/:shotId/generate-video
 export async function POST(
   request: Request,
@@ -92,13 +94,16 @@ export async function POST(
     );
   }
 
+  // Filter to valid UUIDs only (AI may generate placeholder IDs like "kitten-01")
+  const validCharacterIds = shot.characterIds.filter((id) => UUID_RE.test(id));
+
   // Load character tags for prompt enrichment
   let characterTags: string[] = [];
-  if (shot.characterIds.length > 0) {
+  if (validCharacterIds.length > 0) {
     const chars = await db
       .select()
       .from(characters)
-      .where(inArray(characters.id, shot.characterIds));
+      .where(inArray(characters.id, validCharacterIds));
     characterTags = chars
       .map((c) => c.description)
       .filter((d): d is string => !!d && d.length > 0);
@@ -114,29 +119,26 @@ export async function POST(
 
   // Get character reference image for i2v
   let imageUrl: string | undefined;
-  if (isImageToVideo && shot.characterIds.length > 0) {
+  if (isImageToVideo && validCharacterIds.length > 0) {
     const [char] = await db
       .select()
       .from(characters)
-      .where(eq(characters.id, shot.characterIds[0]))
+      .where(eq(characters.id, validCharacterIds[0]))
       .limit(1);
     if (char && char.referenceImages.length > 0) {
       imageUrl = char.referenceImages[0];
     }
   }
 
-  // Submit to fal.ai
-  const endpoint = getModelEndpoint(modelKey);
+  // Fall back to t2v if i2v requested but no image available
+  const actualModelKey = isImageToVideo && !imageUrl
+    ? (modelKey.replace("-i2v", "-t2v") as VideoModelKey)
+    : modelKey;
+  const endpoint = getModelEndpoint(actualModelKey);
   const input: Record<string, unknown> = { prompt: enhancedPrompt };
   if (isImageToVideo && imageUrl) {
     input.image_url = imageUrl;
   }
-
-  // Mark shot as generating
-  await db
-    .update(shots)
-    .set({ status: "generating" })
-    .where(eq(shots.id, params.shotId));
 
   try {
     // Use queue.submit for async generation
@@ -144,10 +146,20 @@ export async function POST(
       input,
     });
 
+    // Mark shot as generating with tracking info
+    await db
+      .update(shots)
+      .set({
+        status: "generating",
+        pendingRequestId: request_id,
+        pendingModel: actualModelKey,
+      })
+      .where(eq(shots.id, params.shotId));
+
     return NextResponse.json({
       requestId: request_id,
       shotId: shot.id,
-      model: modelKey,
+      model: actualModelKey,
       prompt: enhancedPrompt,
       creditsUsed: creditCost,
       balance: deduction.balance,

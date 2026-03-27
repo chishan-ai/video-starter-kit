@@ -5,6 +5,8 @@ import { eq, and, inArray } from "drizzle-orm";
 import { createClient } from "@/lib/supabase/server";
 import { splitScript } from "@/lib/script-splitter";
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 // POST /api/projects/:id/split-script — AI-powered script to storyboard
 export async function POST(
   _request: Request,
@@ -73,7 +75,7 @@ export async function POST(
           description: shot.description,
           duration: shot.duration,
           cameraType: shot.cameraType,
-          characterIds: shot.characterIds,
+          characterIds: shot.characterIds.filter((id) => UUID_RE.test(id)),
           voiceoverText: shot.voiceover,
         })),
       )
