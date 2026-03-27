@@ -5,7 +5,7 @@ import { useState } from "react";
 interface ScriptEditorProps {
   script: string;
   onSave: (script: string) => void;
-  onSplit: () => void;
+  onSplit: (currentScript: string) => void;
   isSplitting: boolean;
   saving: boolean;
 }
@@ -37,7 +37,7 @@ export function ScriptEditor({
           )}
           <button
             type="button"
-            onClick={onSplit}
+            onClick={() => onSplit(script)}
             disabled={isSplitting || script.trim().length === 0}
             className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >

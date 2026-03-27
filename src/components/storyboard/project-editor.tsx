@@ -37,13 +37,23 @@ export function ProjectEditor({ projectId }: ProjectEditorProps) {
     [updateProject],
   );
 
-  const handleSplit = useCallback(() => {
-    splitScript.mutate(undefined, {
-      onSuccess: () => {
-        setSelectedShotId(null);
-      },
-    });
-  }, [splitScript]);
+  const handleSplit = useCallback(
+    async (currentScript: string) => {
+      // Auto-save script before splitting
+      await fetch(`/api/projects/${projectId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ script: currentScript }),
+      });
+      qc.invalidateQueries({ queryKey: ["projects", projectId] });
+      splitScript.mutate(undefined, {
+        onSuccess: () => {
+          setSelectedShotId(null);
+        },
+      });
+    },
+    [splitScript, projectId, qc],
+  );
 
   const handleShotUpdate = useCallback(
     async (data: Record<string, unknown>) => {
