@@ -1,0 +1,42 @@
+{
+  "timestamp": "2026-03-26T14:07:22.153Z",
+  "characterImageUrl": "https://v3b.fal.media/files/b/0a93b957/maly4F05UIXc62e3c_dFn.jpg",
+  "shots": [
+    {
+      "shot": 1,
+      "scene": "anime girl walking through a cherry blossom garden, wind blowing petals, wide shot",
+      "status": "error",
+      "error": "Unprocessable Entity"
+    },
+    {
+      "shot": 2,
+      "scene": "anime girl sitting at a school desk studying, close-up shot, warm afternoon light",
+      "status": "error",
+      "error": "Unprocessable Entity"
+    },
+    {
+      "shot": 3,
+      "scene": "anime girl running on a rooftop at sunset, dynamic action shot, side view",
+      "status": "error",
+      "error": "Unprocessable Entity"
+    },
+    {
+      "shot": 4,
+      "scene": "anime girl standing in rain with umbrella, medium shot, moody blue lighting",
+      "status": "error",
+      "error": "Unprocessable Entity"
+    },
+    {
+      "shot": 5,
+      "scene": "anime girl smiling and waving at camera, front-facing close-up, bright background",
+      "status": "error",
+      "error": "Unprocessable Entity"
+    }
+  ],
+  "totalElapsedSeconds": 46,
+  "settings": {
+    "resolution": "480p",
+    "duration": "4s",
+    "aspect": "9:16"
+  }
+}

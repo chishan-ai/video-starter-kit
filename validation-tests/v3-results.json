@@ -1,0 +1,88 @@
+{
+  "timestamp": "2026-03-26T14:48:24.444Z",
+  "vidu": {
+    "results": [
+      {
+        "label": "Vidu-1",
+        "status": "ok",
+        "elapsed": "122.5",
+        "videoUrl": "https://v3b.fal.media/files/b/0a93ba26/h-97ox6jrrw87rdWAuE9m_output.mp4",
+        "fileSize": "3.2MB"
+      },
+      {
+        "label": "Vidu-2",
+        "status": "ok",
+        "elapsed": "112.5",
+        "videoUrl": "https://v3b.fal.media/files/b/0a93ba25/bbkG3bxXX6bmUxv84wH7V_output.mp4",
+        "fileSize": "3.1MB"
+      },
+      {
+        "label": "Vidu-3",
+        "status": "ok",
+        "elapsed": "121.9",
+        "videoUrl": "https://v3b.fal.media/files/b/0a93ba26/_Rl36mha8hKxZ5rIkRtFX_output.mp4",
+        "fileSize": "4.0MB"
+      },
+      {
+        "label": "Vidu-4",
+        "status": "ok",
+        "elapsed": "122.3",
+        "videoUrl": "https://v3b.fal.media/files/b/0a93ba26/3nlZUlT2drocBsrxjxwqr_output.mp4",
+        "fileSize": "3.1MB"
+      },
+      {
+        "label": "Vidu-5",
+        "status": "ok",
+        "elapsed": "110.4",
+        "videoUrl": "https://v3b.fal.media/files/b/0a93ba25/QSyIDSt1ZXDoUAcus8Inx_output.mp4",
+        "fileSize": "2.7MB"
+      }
+    ],
+    "wallTime": "122"
+  },
+  "kling": {
+    "results": [
+      {
+        "label": "Kling-1",
+        "status": "ok",
+        "elapsed": "293.7",
+        "videoUrl": "https://v3b.fal.media/files/b/0a93ba43/KWPkywNBDvHnZfHdgEpYQ_output.mp4",
+        "fileSize": "7.6MB"
+      },
+      {
+        "label": "Kling-2",
+        "status": "ok",
+        "elapsed": "294.5",
+        "videoUrl": "https://v3b.fal.media/files/b/0a93ba44/2ba5DHRVYD3tR1_19vao6_output.mp4",
+        "fileSize": "10.2MB"
+      },
+      {
+        "label": "Kling-3",
+        "status": "ok",
+        "elapsed": "291.8",
+        "videoUrl": "https://v3b.fal.media/files/b/0a93ba43/mTbcD1sB5-_rmUNs3HX4O_output.mp4",
+        "fileSize": "9.2MB"
+      }
+    ],
+    "wallTime": "294"
+  },
+  "t2v": {
+    "results": [
+      {
+        "label": "T2V-1",
+        "status": "ok",
+        "elapsed": "139.6",
+        "videoUrl": "https://v3b.fal.media/files/b/0a93ba52/Q7Ggy0bwNOVd0aIa3_1C0_output.mp4",
+        "fileSize": "5.0MB"
+      },
+      {
+        "label": "T2V-2",
+        "status": "ok",
+        "elapsed": "139.6",
+        "videoUrl": "https://v3b.fal.media/files/b/0a93ba52/gyAKqfmVfaD52cOZPY34l_output.mp4",
+        "fileSize": "1.5MB"
+      }
+    ],
+    "wallTime": "140"
+  }
+}
