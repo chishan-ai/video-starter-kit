@@ -36,8 +36,8 @@ export default function Community() {
             Tired of juggling 4-6 AI tools?
           </h2>
           <p className="text-gray-400">
-            Most AI animation creators face these problems every day.
-            Mozoria solves them all in one place.
+            Most AI animation creators face these problems every day. Mozoria
+            solves them all in one place.
           </p>
         </div>
 

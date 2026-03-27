@@ -96,10 +96,7 @@ export async function POST(request: Request) {
   // Credit pack purchase
   const pack = CREDIT_PACKS.find((p) => p.id === data.packId);
   if (!pack || !pack.priceId) {
-    return NextResponse.json(
-      { error: "Pack not configured" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Pack not configured" }, { status: 400 });
   }
 
   const session = await getStripe().checkout.sessions.create({

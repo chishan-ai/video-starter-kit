@@ -55,7 +55,10 @@ export async function POST(request: Request) {
         if (audioUrl) {
           await db
             .update(shots)
-            .set({ ttsAudioUrl: typeof audioUrl === "string" ? audioUrl : String(audioUrl) })
+            .set({
+              ttsAudioUrl:
+                typeof audioUrl === "string" ? audioUrl : String(audioUrl),
+            })
             .where(eq(shots.id, shotId));
 
           return NextResponse.json({

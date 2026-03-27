@@ -18,8 +18,14 @@ export function PricingSection() {
         <PricingTable showCta={false} />
 
         <div className="mt-12 max-w-xl mx-auto text-center text-sm text-gray-500 space-y-2">
-          <p>All plans include 1080p export, character consistency, and AI voiceover.</p>
-          <p>Need more credits? Purchase one-time packs anytime. Credits never expire.</p>
+          <p>
+            All plans include 1080p export, character consistency, and AI
+            voiceover.
+          </p>
+          <p>
+            Need more credits? Purchase one-time packs anytime. Credits never
+            expire.
+          </p>
         </div>
       </div>
     </section>

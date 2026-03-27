@@ -156,7 +156,7 @@ export function BillingClient({
                 <div>
                   <p className="text-lg font-bold">{pack.credits} credits</p>
                   <p className="text-sm text-muted-foreground">
-                    ${(pack.price / pack.credits * 100).toFixed(1)} per 100
+                    ${((pack.price / pack.credits) * 100).toFixed(1)} per 100
                   </p>
                 </div>
                 <span className="text-xl font-bold">${pack.price}</span>

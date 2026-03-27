@@ -32,9 +32,7 @@ export function ShotDetailPanel({
   onUpdate,
 }: ShotDetailPanelProps) {
   const [description, setDescription] = useState(shot.description);
-  const [voiceoverText, setVoiceoverText] = useState(
-    shot.voiceoverText ?? "",
-  );
+  const [voiceoverText, setVoiceoverText] = useState(shot.voiceoverText ?? "");
   const generateVideo = useGenerateVideo(projectId, shot.id);
   const generateTTS = useGenerateTTS(projectId, shot.id);
 
@@ -145,7 +143,9 @@ export function ShotDetailPanel({
               <button
                 type="button"
                 onClick={() =>
-                  onUpdate({ voiceoverText: voiceoverText || null } as Partial<Shot>)
+                  onUpdate({
+                    voiceoverText: voiceoverText || null,
+                  } as Partial<Shot>)
                 }
                 className="rounded bg-secondary px-2 py-1 text-xs text-secondary-foreground hover:bg-secondary/80"
               >
@@ -170,11 +170,7 @@ export function ShotDetailPanel({
           {shot.ttsAudioUrl && (
             <div className="mt-2 flex items-center gap-2 rounded-md border border-border bg-secondary/30 p-2">
               <Volume2 className="h-4 w-4 text-muted-foreground" />
-              <audio
-                src={shot.ttsAudioUrl}
-                controls
-                className="h-8 flex-1"
-              />
+              <audio src={shot.ttsAudioUrl} controls className="h-8 flex-1" />
             </div>
           )}
           {generateTTS.error && (

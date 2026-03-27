@@ -125,9 +125,7 @@ export function PricingTable({
         {PLANS.map((plan) => {
           const isCurrent = currentPlan === plan.key;
           const price =
-            plan.price === 0
-              ? 0
-              : Math.round(plan.price * discount);
+            plan.price === 0 ? 0 : Math.round(plan.price * discount);
 
           return (
             <div
@@ -148,9 +146,7 @@ export function PricingTable({
               <h3 className="text-lg font-semibold">{plan.name}</h3>
 
               <div className="mt-3">
-                <span className="text-3xl font-bold">
-                  ${price}
-                </span>
+                <span className="text-3xl font-bold">${price}</span>
                 {plan.price > 0 && (
                   <span className="text-sm text-muted-foreground">
                     /{interval === "year" ? "mo" : "mo"}
@@ -165,10 +161,7 @@ export function PricingTable({
 
               <ul className="mt-4 flex-1 space-y-2">
                 {plan.features.map((feature) => (
-                  <li
-                    key={feature}
-                    className="flex items-start gap-2 text-sm"
-                  >
+                  <li key={feature} className="flex items-start gap-2 text-sm">
                     <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                     <span>{feature}</span>
                   </li>
