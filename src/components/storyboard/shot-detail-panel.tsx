@@ -16,6 +16,7 @@ interface Shot {
   selectedVersionId: string | null;
   voiceoverText: string | null;
   ttsAudioUrl: string | null;
+  videoUrl: string | null;
 }
 
 interface ShotDetailPanelProps {
@@ -59,6 +60,26 @@ export function ShotDetailPanel({
       </div>
 
       <div className="flex-1 space-y-4 overflow-y-auto p-4">
+        {/* Video Preview */}
+        {shot.videoUrl ? (
+          <div className="overflow-hidden rounded-lg border border-border">
+            <video
+              key={shot.videoUrl}
+              src={shot.videoUrl}
+              controls
+              playsInline
+              className="aspect-video w-full bg-black"
+            />
+          </div>
+        ) : shot.status === "generating" ? (
+          <div className="flex aspect-video items-center justify-center rounded-lg border border-border bg-muted">
+            <div className="text-center">
+              <div className="mx-auto mb-2 h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              <p className="text-xs text-muted-foreground">Generating video...</p>
+            </div>
+          </div>
+        ) : null}
+
         {/* Description */}
         <div>
           <label className="mb-1 block text-xs font-medium text-muted-foreground">

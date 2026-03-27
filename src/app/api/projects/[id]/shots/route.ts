@@ -48,11 +48,20 @@ export async function GET(
     return NextResponse.json({ error: "Project not found" }, { status: 404 });
   }
 
-  const result = await db
-    .select()
+  const rows = await db
+    .select({
+      shot: shots,
+      videoUrl: shotVersions.videoUrl,
+    })
     .from(shots)
+    .leftJoin(shotVersions, eq(shots.selectedVersionId, shotVersions.id))
     .where(eq(shots.projectId, params.id))
     .orderBy(asc(shots.order));
+
+  const result = rows.map((r) => ({
+    ...r.shot,
+    videoUrl: r.videoUrl ?? null,
+  }));
 
   // Auto-check fal.ai status for generating shots (lazy polling)
   const generatingShots = result.filter(

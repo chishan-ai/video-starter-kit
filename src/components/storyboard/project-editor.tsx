@@ -199,7 +199,7 @@ export function ProjectEditor({ projectId }: ProjectEditorProps) {
         {selectedShot && (
           <div className="w-80 shrink-0">
             <ShotDetailPanel
-              shot={selectedShot as any}
+              shot={selectedShot}
               projectId={projectId}
               onUpdate={handleShotUpdate}
             />

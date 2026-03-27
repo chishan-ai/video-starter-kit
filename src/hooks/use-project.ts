@@ -28,6 +28,7 @@ interface Shot {
   selectedVersionId: string | null;
   voiceoverText: string | null;
   ttsAudioUrl: string | null;
+  videoUrl: string | null;
   createdAt: string;
 }
 

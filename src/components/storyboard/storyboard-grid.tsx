@@ -11,6 +11,7 @@ interface Shot {
   status: string;
   selectedVersionId: string | null;
   ttsAudioUrl: string | null;
+  videoUrl: string | null;
 }
 
 interface StoryboardGridProps {

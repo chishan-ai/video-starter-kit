@@ -12,12 +12,12 @@ interface Shot {
   status: string;
   selectedVersionId: string | null;
   ttsAudioUrl: string | null;
+  videoUrl: string | null;
 }
 
 interface ShotCardProps {
   shot: Shot;
   isSelected: boolean;
-  thumbnailUrl?: string;
   onClick: () => void;
 }
 
@@ -38,7 +38,6 @@ const STATUS_LABELS: Record<string, string> = {
 export function ShotCard({
   shot,
   isSelected,
-  thumbnailUrl,
   onClick,
 }: ShotCardProps) {
   return (
@@ -52,13 +51,19 @@ export function ShotCard({
           : "border-border hover:border-primary/50",
       )}
     >
-      {/* Thumbnail / Placeholder */}
+      {/* Thumbnail / Video Preview */}
       <div className="relative aspect-video w-full bg-muted">
-        {thumbnailUrl ? (
-          <img
-            src={thumbnailUrl}
-            alt={`Shot ${shot.order + 1}`}
+        {shot.videoUrl ? (
+          <video
+            src={shot.videoUrl}
+            muted
+            playsInline
             className="h-full w-full object-cover"
+            onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
+            onMouseLeave={(e) => {
+              e.currentTarget.pause();
+              e.currentTarget.currentTime = 0;
+            }}
           />
         ) : (
           <div className="flex h-full items-center justify-center text-2xl text-muted-foreground">
