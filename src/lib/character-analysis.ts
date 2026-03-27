@@ -30,7 +30,7 @@ Be specific and accurate. Only describe what you can see in the image.`;
 export async function analyzeCharacterImage(
   imageUrl: string,
 ): Promise<CharacterFeatures> {
-  const model = getGeminiModel("gemini-2.0-flash");
+  const model = getGeminiModel("gemini-2.5-flash");
 
   // Fetch image and convert to base64
   const response = await fetch(imageUrl);

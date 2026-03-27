@@ -69,7 +69,7 @@ export async function splitScript(
   style: string,
   characters: { id: string; name: string; promptTag: string }[],
 ): Promise<SplitResult> {
-  const model = getGeminiModel("gemini-2.0-flash");
+  const model = getGeminiModel("gemini-2.5-flash");
 
   const prompt = buildPrompt(script, style, characters);
   const result = await model.generateContent(prompt);

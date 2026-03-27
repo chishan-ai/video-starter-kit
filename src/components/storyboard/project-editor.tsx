@@ -182,6 +182,11 @@ export function ProjectEditor({ projectId }: ProjectEditorProps) {
             </div>
 
             {/* Generation errors */}
+            {splitScript.error && (
+              <p className="text-sm text-red-500">
+                Split failed: {splitScript.error.message}
+              </p>
+            )}
             {generateAll.error && (
               <p className="text-sm text-red-500">
                 {generateAll.error.message}

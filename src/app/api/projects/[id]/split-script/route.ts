@@ -36,57 +36,66 @@ export async function POST(
     );
   }
 
-  // Load character data for prompt enrichment
-  let characterData: { id: string; name: string; promptTag: string }[] = [];
-  if (project.characterIds.length > 0) {
-    const chars = await db
-      .select()
-      .from(characters)
-      .where(inArray(characters.id, project.characterIds));
+  try {
+    // Load character data for prompt enrichment
+    let characterData: { id: string; name: string; promptTag: string }[] = [];
+    if (project.characterIds.length > 0) {
+      const chars = await db
+        .select()
+        .from(characters)
+        .where(inArray(characters.id, project.characterIds));
 
-    characterData = chars.map((c) => ({
-      id: c.id,
-      name: c.name,
-      // Use description as promptTag fallback
-      promptTag: c.description || c.name,
-    }));
+      characterData = chars.map((c) => ({
+        id: c.id,
+        name: c.name,
+        // Use description as promptTag fallback
+        promptTag: c.description || c.name,
+      }));
+    }
+
+    // AI split
+    const result = await splitScript(
+      project.script,
+      project.style,
+      characterData,
+    );
+
+    // Delete existing shots for this project
+    await db.delete(shots).where(eq(shots.projectId, params.id));
+
+    // Insert new shots
+    const insertedShots = await db
+      .insert(shots)
+      .values(
+        result.shots.map((shot) => ({
+          projectId: params.id,
+          order: shot.order,
+          description: shot.description,
+          duration: shot.duration,
+          cameraType: shot.cameraType,
+          characterIds: shot.characterIds,
+          voiceoverText: shot.voiceover,
+        })),
+      )
+      .returning();
+
+    // Update project status
+    await db
+      .update(projects)
+      .set({ status: "draft", updatedAt: new Date() })
+      .where(eq(projects.id, params.id));
+
+    return NextResponse.json({
+      shots: insertedShots,
+      totalDuration: result.totalDuration,
+      summary: result.summary,
+    });
+  } catch (err) {
+    console.error("[split-script] Error:", err);
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json(
+      { error: "Failed to split script", detail: message },
+      { status: 500 },
+    );
   }
-
-  // AI split
-  const result = await splitScript(
-    project.script,
-    project.style,
-    characterData,
-  );
-
-  // Delete existing shots for this project
-  await db.delete(shots).where(eq(shots.projectId, params.id));
-
-  // Insert new shots
-  const insertedShots = await db
-    .insert(shots)
-    .values(
-      result.shots.map((shot) => ({
-        projectId: params.id,
-        order: shot.order,
-        description: shot.description,
-        duration: shot.duration,
-        cameraType: shot.cameraType,
-        characterIds: shot.characterIds,
-        voiceoverText: shot.voiceover,
-      })),
-    )
-    .returning();
-
-  // Update project status
-  await db
-    .update(projects)
-    .set({ status: "draft", updatedAt: new Date() })
-    .where(eq(projects.id, params.id));
-
-  return NextResponse.json({
-    shots: insertedShots,
-    totalDuration: result.totalDuration,
-    summary: result.summary,
-  });
 }
