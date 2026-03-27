@@ -44,6 +44,10 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.includes(".");
 
   if (!user && !isPublicPath && !isApiAuth && !isStaticAsset) {
+    // API routes should return 401 JSON, not redirect
+    if (request.nextUrl.pathname.startsWith("/api/")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
