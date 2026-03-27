@@ -297,3 +297,114 @@
 3. **定价策略:** $19-$39/月订阅 + 按生成量的积分制，对标 LTX Studio 但聚焦分镜编辑差异化
 4. **获客渠道:** Twitter/X Build in Public + YouTube 教程（展示工作流对比）
 5. **首批用户:** 已在用 4-6 个工具做 AI Shorts 的成长期创作者（月工具支出 $50-$150 区间）
+
+### 6.8 X/Twitter 真实用户声音调研（Grok DeepSearch, 2026-03-27）
+
+> 方法说明: 通过 Grok DeepSearch 搜索 X 上关于 AI animation / AI shorts 的帖子，
+> 手动区分「真实创作者」与「工具卖家/营销号」，仅采信真实创作者的第一手声音。
+> Grok 搜索链接:
+> - 第一轮: https://grok.com/c/137f3070-b3f2-44d1-97ff-0eb524d37040
+> - 第二轮(深度): https://grok.com/c/be201f20-da8d-418c-bbe2-2b2c59f218cf
+
+#### 账号分类（13 个初始样本）
+
+| 账号 | 分类 | 判断依据 |
+|------|------|---------|
+| @CheerUpSleepyB | **真实创作者** | 分享个人创作痛点，抱怨工具成本和角色不一致 |
+| @Schloppesthesia | **真实创作者** | 展示个人 AI 动画作品 |
+| @jimmywahla187 | **真实创作者** | 分享自己的创作过程 |
+| @2un_dee | 工具卖家 | 推销 AI 工作流课程/教程 |
+| @Thewarlordai | 工具卖家 | 推销 AI 视频生成工具 |
+| @knoxtwts | 工具卖家 | 推销"AI shorts赚钱"方法论 |
+| @primemans | 工具卖家 | 推销 AI 副业赚钱课程 |
+| @maverickecom | 工具卖家 | 推销 AI 电商工具 |
+| @architrathi | 工具卖家 | AI 工具评测博主，推广导向 |
+| @ashbolttt | 工具卖家 | AI 赚钱教程推广 |
+| @hcklemr | 不确定 | 信息不足 |
+| @JacksonBBBBBB | 不确定 | 信息不足 |
+
+**关键发现:** X 上关于"AI animation"的帖子中，约 60%+ 来自工具卖家/营销号，而非真实创作者。
+"all-in-one 工具"的需求信号在 X 上被工具卖家严重放大，真实创作者更关注的是具体痛点而非工具整合。
+
+#### 真实创作者第一手声音（第二轮 Grok 深度搜索, 217 sources）
+
+**@Gosakumim** — YouTube 频道 100+ AI 动画视频，6 年运营
+- 频道被 YouTube **取消变现 (DEMONETIZED)**，正在申诉
+- 代表性案例: 长期运营的 AI 频道也面临政策打击
+
+**@salah_syed22328** — YouTube 频道 "Absurd Falsafi"，AI 3D 动画
+- 频道被 YouTube **暂停 (SUSPENDED)**，原因: "Spam & Deceptive Practices"
+- 说明 YouTube 对 AI 3D 动画内容的审核尤其严格
+
+**@CheerUpSleepyB** — 活跃 AI 动画创作者
+- 月工具支出: Runway $100/月 + Kling $70/月 = **$170/月**
+- 核心痛点: "AI 动画的连贯性（continuity）太差，每次生成都会破坏角色一致性"
+- 证实了角色一致性是真实创作者的 #1 痛点
+
+**@creatoroly** — 真实 Motion Designer
+- 引用: "2 prompt video took 2 days and still looks generic"
+- 说明即使有专业背景，AI 视频生成的效率和质量仍不理想
+- 预期与现实差距巨大: 以为几分钟出片，实际需要反复调整
+
+**@reyaffrev** — AI 3D 动画创作者，内容发布在 TikTok/Reels/Shorts
+- 观点: 以前制作动画需要"$10k+ 和 3 个月"，现在"30 秒就能完成"
+- 代表乐观派: AI 大幅降低了创作门槛
+- 变现渠道: TikTok/Reels/Shorts 多平台分发
+
+**@0xdegeta** — YouTube passive income 追求者
+- 使用 Kling AI 制作 YouTube 内容
+- 典型的"AI赚钱"动机驱动的创作者
+
+#### 洞察总结
+
+**痛点优先级（基于真实创作者声音，非工具卖家宣传）:**
+1. **YouTube 政策/变现风险** — 真实创作者最恐惧的是频道被取消变现或暂停，这直接影响生计
+2. **角色一致性** — 跨镜头角色变脸是生产效率的最大杀手
+3. **生产效率落差** — "以为30秒出片，实际2天还不满意"的预期差距
+4. **工具成本** — 月 $100-$200 的工具支出已是常态，但创作者仍觉得性价比不够
+
+**对 Mozoria 的启示:**
+- 「帮你不被 YouTube 打」比「帮你更快出片」更有说服力
+- 角色一致性功能必须作为核心卖点的第一条
+- 定价在 $19-$39/月区间有竞争力（比 Runway+Kling 的 $170/月 组合便宜得多）
+- 需要在营销中区分真实创作者痛点 vs 工具卖家噪音
+
+**X 平台调研的局限性:**
+- 真实创作者在 X 上较沉默，工具卖家声量远大于真实用户
+- 需要结合 YouTube 评论区调研来补充更多真实创作者声音
+
+### 6.9 YouTube 评论区真实用户声音（2026-03-27）
+
+> 视频: "AI Faceless Channels Getting Demonetized At Scale (What to do)"
+> 链接: https://www.youtube.com/watch?v=3cc8pYY1qjk
+> 频道: The Zinny Studio (16.3万订阅), 3.1万观看, 1个月前
+
+#### 高价值评论摘录
+
+**@anecdocuentosehistorias4976** (27 赞)
+- "Three videos a week? I can barely upload one video every two weeks, creating AI movies is not as easy as it sounds specially **characters inconsistency** I need other tools to keep them consistent and even so AI screws up from time to time. On the plus side, if it wasn't for AI, i wouldn't be creating animated films"
+- **洞察:** 真实 AI 动画创作者，两周才能做一个视频。明确指出角色不一致是最大痛点，需要额外工具。同时承认没有 AI 就不会做动画 — 典型的"AI enabled creator"
+
+**@GabbyThePhilomath** (137 赞 — 最高赞评论之一)
+- "YouTube does not prohibit the use of AI. What it penalizes is lazy, deceptive, or low-effort use of AI that floods the platform with repetitive content... AI itself is not the problem. Execution is. A video made poorly, with or without AI, can be demonetized. Channels that look fully human also get demonetized."
+- **洞察:** 高赞说明社区共识 — YouTube 打击的不是 AI 本身，而是低质量。这对 Mozoria 的定位很重要: 帮助用户做"高质量 AI 内容"
+
+**@RandyLibby** (9 赞)
+- 获奖词曲作者，运营音乐频道。用 AI 生成伴奏因为"请乐队/录音棚太贵"。之前做无脸频道，现在准备出镜以符合政策。刚到 1000 订阅准备变现。
+- **洞察:** 典型的"AI 作为成本替代"用户 — 有真实创作能力但缺乏制作资源。刚到变现门槛，对政策极度敏感。
+
+**@africanfolktalesbystar** (6 赞)
+- 刚决定开设非洲民间故事频道，关注变现政策
+- **洞察:** 新入场的 AI 动画创作者，niche 方向（非洲民间故事），代表大量"有故事但没技能"的潜在创作者
+
+**@Frame_Fracture** (9 赞)
+- "YouTube needs to fundamentally rethink its RPM structure... Currently the financial return does not adequately reflect the immense 'brain power,' physical labor, and time invested in high-quality, original content. This imbalance is forcing talented creators to choose the path of least resistance, lowering their production quality just to remain sustainable."
+- **洞察:** 深层矛盾 — YouTube 的低 RPM 迫使创作者选择低成本路径，而政策又打击低质量内容。创作者被夹在"做好的赚不到钱"和"做差的会被封"之间。
+
+#### YouTube 评论区洞察总结
+
+1. **角色一致性再次被真实创作者确认为 #1 痛点** — 不仅 X 上的创作者说，YouTube 评论区也在说
+2. **"AI enabled creator" 是核心用户画像** — "如果没有 AI 我就不会做动画" — 他们不是传统动画师转型，而是 AI 赋能的新创作者
+3. **变现政策焦虑弥漫** — 新创作者最担心的是还没变现就被封
+4. **高质量 vs 高频率的两难** — "两周一个视频" vs "一周三个" — 创作者被迫在质量和产出频率之间做取舍
+5. **RPM 结构性矛盾** — YouTube 低 RPM 推动创作者走捷径，政策又惩罚捷径 → Mozoria 的机会: 在保持质量的前提下提升效率
