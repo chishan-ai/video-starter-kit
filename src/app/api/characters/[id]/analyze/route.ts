@@ -22,9 +22,7 @@ export async function POST(
   const [character] = await db
     .select()
     .from(characters)
-    .where(
-      and(eq(characters.id, params.id), eq(characters.userId, user.id)),
-    )
+    .where(and(eq(characters.id, params.id), eq(characters.userId, user.id)))
     .limit(1);
 
   if (!character) {

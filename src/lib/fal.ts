@@ -70,7 +70,8 @@ export const AVAILABLE_ENDPOINTS: ApiInfo[] = [
   {
     endpointId: "fal-ai/vidu/q3/image-to-video",
     label: "Vidu Q3 Image-to-Video",
-    description: "Animate images with anime-optimized motion, best character consistency",
+    description:
+      "Animate images with anime-optimized motion, best character consistency",
     cost: "",
     category: "video",
     inputAsset: ["image"],
@@ -78,14 +79,16 @@ export const AVAILABLE_ENDPOINTS: ApiInfo[] = [
   {
     endpointId: "fal-ai/kling-video/v3/pro/text-to-video",
     label: "Kling 3.0 Pro Text-to-Video",
-    description: "Cinematic video with fluid motion and native audio generation",
+    description:
+      "Cinematic video with fluid motion and native audio generation",
     cost: "",
     category: "video",
   },
   {
     endpointId: "fal-ai/kling-video/v3/pro/image-to-video",
     label: "Kling 3.0 Pro Image-to-Video",
-    description: "Top-tier image animation with cinematic visuals and fluid motion",
+    description:
+      "Top-tier image animation with cinematic visuals and fluid motion",
     cost: "",
     category: "video",
     inputAsset: ["image"],

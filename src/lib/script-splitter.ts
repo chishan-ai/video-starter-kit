@@ -21,7 +21,9 @@ function buildPrompt(
   characterDescriptions: { id: string; name: string; promptTag: string }[],
 ): string {
   const characterList = characterDescriptions
-    .map((c) => `- ID: "${c.id}", Name: "${c.name}", Appearance: "${c.promptTag}"`)
+    .map(
+      (c) => `- ID: "${c.id}", Name: "${c.name}", Appearance: "${c.promptTag}"`,
+    )
     .join("\n");
 
   return `You are an expert anime storyboard director. Split the following script into 5-8 shots (scenes) for a short video.

@@ -46,9 +46,7 @@ export async function deductCredits(
       creditsBalance: sql`${users.creditsBalance} - ${amount}`,
       updatedAt: new Date(),
     })
-    .where(
-      eq(users.id, userId),
-    )
+    .where(eq(users.id, userId))
     .returning({ creditsBalance: users.creditsBalance });
 
   if (!updated || updated.creditsBalance < 0) {

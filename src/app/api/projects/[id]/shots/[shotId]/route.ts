@@ -48,9 +48,7 @@ export async function GET(
   const [shot] = await db
     .select()
     .from(shots)
-    .where(
-      and(eq(shots.id, params.shotId), eq(shots.projectId, params.id)),
-    )
+    .where(and(eq(shots.id, params.shotId), eq(shots.projectId, params.id)))
     .limit(1);
 
   if (!shot) {
@@ -91,9 +89,7 @@ export async function PATCH(
   const [updated] = await db
     .update(shots)
     .set(parsed.data)
-    .where(
-      and(eq(shots.id, params.shotId), eq(shots.projectId, params.id)),
-    )
+    .where(and(eq(shots.id, params.shotId), eq(shots.projectId, params.id)))
     .returning();
 
   if (!updated) {
@@ -124,9 +120,7 @@ export async function DELETE(
 
   const [deleted] = await db
     .delete(shots)
-    .where(
-      and(eq(shots.id, params.shotId), eq(shots.projectId, params.id)),
-    )
+    .where(and(eq(shots.id, params.shotId), eq(shots.projectId, params.id)))
     .returning();
 
   if (!deleted) {

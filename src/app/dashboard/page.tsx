@@ -71,8 +71,7 @@ export default async function DashboardPage() {
                   <span>{project.aspectRatio}</span>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Updated{" "}
-                  {new Date(project.updatedAt).toLocaleDateString()}
+                  Updated {new Date(project.updatedAt).toLocaleDateString()}
                 </p>
               </Link>
             ))}

@@ -17,7 +17,8 @@ const STYLE_MODIFIERS: Record<string, string> = {
 const CAMERA_MODIFIERS: Record<string, string> = {
   wide: "wide establishing shot, full scene visible, environmental context",
   medium: "medium shot, waist-up framing, balanced composition",
-  "close-up": "close-up shot, face detail, emotional expression, shallow depth of field",
+  "close-up":
+    "close-up shot, face detail, emotional expression, shallow depth of field",
   overhead: "overhead aerial shot, bird's eye view, top-down perspective",
   "low-angle":
     "low angle shot, looking up, dramatic perspective, empowering framing",

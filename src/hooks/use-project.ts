@@ -76,7 +76,11 @@ export function useShots(projectId: string) {
 export function useCreateProject() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { name: string; style?: string; aspectRatio?: string }) =>
+    mutationFn: (data: {
+      name: string;
+      style?: string;
+      aspectRatio?: string;
+    }) =>
       fetchJson<Project>("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

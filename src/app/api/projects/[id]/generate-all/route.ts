@@ -58,9 +58,7 @@ export async function POST(
   const pendingShots = await db
     .select()
     .from(shots)
-    .where(
-      and(eq(shots.projectId, params.id), eq(shots.status, "pending")),
-    )
+    .where(and(eq(shots.projectId, params.id), eq(shots.status, "pending")))
     .orderBy(asc(shots.order));
 
   if (pendingShots.length === 0) {
@@ -86,7 +84,10 @@ export async function POST(
   const allCharacterIds = Array.from(
     new Set(pendingShots.flatMap((s) => s.characterIds)),
   );
-  let charMap = new Map<string, { description: string; referenceImages: string[] }>();
+  let charMap = new Map<
+    string,
+    { description: string; referenceImages: string[] }
+  >();
   if (allCharacterIds.length > 0) {
     const chars = await db
       .select()

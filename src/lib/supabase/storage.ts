@@ -11,12 +11,10 @@ export async function uploadCharacterImage(
   const ext = file.name.split(".").pop() ?? "png";
   const path = `${userId}/${crypto.randomUUID()}.${ext}`;
 
-  const { error } = await supabase.storage
-    .from(BUCKET)
-    .upload(path, file, {
-      contentType: file.type,
-      upsert: false,
-    });
+  const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
+    contentType: file.type,
+    upsert: false,
+  });
 
   if (error) {
     throw new Error(`Upload failed: ${error.message}`);

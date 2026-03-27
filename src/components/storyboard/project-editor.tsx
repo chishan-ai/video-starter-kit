@@ -104,7 +104,9 @@ export function ProjectEditor({ projectId }: ProjectEditorProps) {
         <div className="flex items-center gap-3">
           {shots.length > 0 && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span>{completedCount}/{shots.length} done</span>
+              <span>
+                {completedCount}/{shots.length} done
+              </span>
               {generatingCount > 0 && (
                 <span className="text-yellow-500">
                   {generatingCount} generating

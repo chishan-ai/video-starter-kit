@@ -47,9 +47,7 @@ export async function POST(
   const [shot] = await db
     .select()
     .from(shots)
-    .where(
-      and(eq(shots.id, params.shotId), eq(shots.projectId, params.id)),
-    )
+    .where(and(eq(shots.id, params.shotId), eq(shots.projectId, params.id)))
     .limit(1);
 
   if (!shot) {

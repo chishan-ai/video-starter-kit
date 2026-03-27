@@ -30,9 +30,7 @@ export async function GET(
   const [character] = await db
     .select()
     .from(characters)
-    .where(
-      and(eq(characters.id, params.id), eq(characters.userId, user.id)),
-    )
+    .where(and(eq(characters.id, params.id), eq(characters.userId, user.id)))
     .limit(1);
 
   if (!character) {
@@ -68,9 +66,7 @@ export async function PATCH(
   const [updated] = await db
     .update(characters)
     .set(parsed.data)
-    .where(
-      and(eq(characters.id, params.id), eq(characters.userId, user.id)),
-    )
+    .where(and(eq(characters.id, params.id), eq(characters.userId, user.id)))
     .returning();
 
   if (!updated) {
@@ -96,9 +92,7 @@ export async function DELETE(
 
   const [deleted] = await db
     .delete(characters)
-    .where(
-      and(eq(characters.id, params.id), eq(characters.userId, user.id)),
-    )
+    .where(and(eq(characters.id, params.id), eq(characters.userId, user.id)))
     .returning();
 
   if (!deleted) {

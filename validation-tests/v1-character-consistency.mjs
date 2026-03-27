@@ -15,7 +15,8 @@ async function generateCharacterImage() {
   console.log("\n=== STEP 1: Generating character reference image ===");
   const result = await fal.subscribe("fal-ai/flux/schnell", {
     input: {
-      prompt: "anime girl character, pink hair in twin tails, bright blue eyes, dark blue school uniform with white collar, determined expression, front-facing portrait, clean white background, anime style",
+      prompt:
+        "anime girl character, pink hair in twin tails, bright blue eyes, dark blue school uniform with white collar, determined expression, front-facing portrait, clean white background, anime style",
       image_size: "square",
       num_images: 1,
     },
@@ -74,7 +75,7 @@ async function main() {
   }
 
   // Summary
-  const ok = results.filter(r => r.status === "ok");
+  const ok = results.filter((r) => r.status === "ok");
   console.log("\n=== SUMMARY ===");
   console.log(`Character: ${charUrl}`);
   console.log(`Shots: ${ok.length}/${results.length} successful\n`);
@@ -94,7 +95,13 @@ async function main() {
   // Save results
   const fs = await import("fs");
   const report = { timestamp: new Date().toISOString(), charUrl, results };
-  fs.writeFileSync("./validation-tests/v1-results.json", JSON.stringify(report, null, 2));
+  fs.writeFileSync(
+    "./validation-tests/v1-results.json",
+    JSON.stringify(report, null, 2),
+  );
 }
 
-main().catch(err => { console.error("Fatal:", err); process.exit(1); });
+main().catch((err) => {
+  console.error("Fatal:", err);
+  process.exit(1);
+});

@@ -44,7 +44,9 @@ export async function POST(request: Request) {
       // Fetch the result
       const result = await falServer.queue.result(model, { requestId });
       const data = result.data as Record<string, unknown>;
-      const video = data.video as { url: string; file_size?: number } | undefined;
+      const video = data.video as
+        | { url: string; file_size?: number }
+        | undefined;
 
       if (video?.url) {
         // Create ShotVersion record
@@ -91,7 +93,8 @@ export async function POST(request: Request) {
     // Still in progress
     return NextResponse.json({
       status: "generating",
-      queuePosition: (status as unknown as Record<string, unknown>).queue_position,
+      queuePosition: (status as unknown as Record<string, unknown>)
+        .queue_position,
     });
   } catch (error) {
     const message =

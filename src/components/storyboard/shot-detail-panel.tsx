@@ -46,9 +46,7 @@ export function ShotDetailPanel({
   return (
     <div className="flex h-full flex-col border-l border-border bg-background">
       <div className="border-b border-border p-4">
-        <h3 className="text-sm font-medium">
-          Shot {shot.order + 1}
-        </h3>
+        <h3 className="text-sm font-medium">Shot {shot.order + 1}</h3>
         <span className="text-xs capitalize text-muted-foreground">
           {shot.status}
         </span>
@@ -87,7 +85,9 @@ export function ShotDetailPanel({
               <button
                 key={cam}
                 type="button"
-                onClick={() => onUpdate({ cameraType: cam as Shot["cameraType"] })}
+                onClick={() =>
+                  onUpdate({ cameraType: cam as Shot["cameraType"] })
+                }
                 className={`rounded-full px-2.5 py-1 text-xs capitalize transition-colors ${
                   shot.cameraType === cam
                     ? "bg-primary text-primary-foreground"
@@ -127,9 +127,7 @@ export function ShotDetailPanel({
           <button
             type="button"
             onClick={() => handleGenerate("vidu-q3-i2v")}
-            disabled={
-              shot.status === "generating" || generateVideo.isPending
-            }
+            disabled={shot.status === "generating" || generateVideo.isPending}
             className="w-full rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
             {generateVideo.isPending
@@ -139,9 +137,7 @@ export function ShotDetailPanel({
           <button
             type="button"
             onClick={() => handleGenerate("kling-3-pro-i2v")}
-            disabled={
-              shot.status === "generating" || generateVideo.isPending
-            }
+            disabled={shot.status === "generating" || generateVideo.isPending}
             className="w-full rounded-md border border-border px-3 py-2 text-sm hover:bg-accent disabled:opacity-50"
           >
             Generate (Kling 3.0) — 30 credits
@@ -150,9 +146,7 @@ export function ShotDetailPanel({
 
         {/* Error */}
         {generateVideo.error && (
-          <p className="text-xs text-red-500">
-            {generateVideo.error.message}
-          </p>
+          <p className="text-xs text-red-500">{generateVideo.error.message}</p>
         )}
       </div>
     </div>

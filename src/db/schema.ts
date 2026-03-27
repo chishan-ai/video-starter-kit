@@ -19,11 +19,7 @@ export const projectStyleEnum = pgEnum("project_style", [
   "mixed",
 ]);
 
-export const aspectRatioEnum = pgEnum("aspect_ratio", [
-  "9:16",
-  "16:9",
-  "1:1",
-]);
+export const aspectRatioEnum = pgEnum("aspect_ratio", ["9:16", "16:9", "1:1"]);
 
 export const projectStatusEnum = pgEnum("project_status", [
   "draft",
@@ -94,7 +90,10 @@ export const characters = pgTable("characters", {
   name: text("name").notNull(),
   gender: text("gender"),
   description: text("description").notNull().default(""),
-  referenceImages: jsonb("reference_images").$type<string[]>().notNull().default([]),
+  referenceImages: jsonb("reference_images")
+    .$type<string[]>()
+    .notNull()
+    .default([]),
   thumbnailUrl: text("thumbnail_url"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
