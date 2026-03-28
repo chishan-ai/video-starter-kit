@@ -4,17 +4,21 @@ import { projects, shots, shotVersions, characters } from "@/db/schema";
 import { eq, and, inArray } from "drizzle-orm";
 import { createClient } from "@/lib/supabase/server";
 import { deductCredits, CREDIT_COSTS } from "@/lib/credits";
-import { buildVideoPrompt } from "@/lib/prompt-enhancer";
+import { buildVideoPrompt, buildReferenceVideoPrompt, buildReferenceVideoInput } from "@/lib/prompt-enhancer";
 import {
   falServer,
   getModelEndpoint,
+  isReferenceModel,
   type VideoModelKey,
 } from "@/lib/fal-server";
 import { z } from "zod";
 
 const generateSchema = z.object({
   model: z
-    .enum(["vidu-q3-i2v", "vidu-q3-t2v", "kling-3-pro-i2v", "kling-3-pro-t2v"])
+    .enum([
+      "vidu-q3-i2v", "vidu-q3-t2v", "kling-3-pro-i2v", "kling-3-pro-t2v",
+      "kling-o1-ref", "vidu-q1-ref", "vidu-q2-ref",
+    ])
     .default("vidu-q3-i2v"),
 });
 
@@ -67,13 +71,13 @@ export async function POST(
   }
 
   const modelKey = parsed.data.model;
-  const isImageToVideo = modelKey.endsWith("-i2v");
+  const isRef = isReferenceModel(modelKey);
 
   // Deduct credits
-  const costKey = modelKey.replace("-i2v", "").replace("-t2v", "") as string;
-  const creditCost =
-    CREDIT_COSTS[`${costKey}-i2v` as keyof typeof CREDIT_COSTS] ??
-    CREDIT_COSTS["vidu-q3-i2v"];
+  const creditCost = isRef
+    ? CREDIT_COSTS[modelKey as keyof typeof CREDIT_COSTS]
+    : (CREDIT_COSTS[modelKey as keyof typeof CREDIT_COSTS] ??
+       CREDIT_COSTS["vidu-q3-i2v"]);
 
   const deduction = await deductCredits(
     user.id,
@@ -97,47 +101,63 @@ export async function POST(
   // Filter to valid UUIDs only (AI may generate placeholder IDs like "kitten-01")
   const validCharacterIds = shot.characterIds.filter((id) => UUID_RE.test(id));
 
-  // Load character tags for prompt enrichment
-  let characterTags: string[] = [];
+  // Load character data (used for both prompt tags and reference images)
+  let charData: { id: string; name: string; description: string; referenceImages: string[] }[] = [];
   if (validCharacterIds.length > 0) {
-    const chars = await db
+    charData = await db
       .select()
       .from(characters)
       .where(inArray(characters.id, validCharacterIds));
-    characterTags = chars
-      .map((c) => c.description)
-      .filter((d): d is string => !!d && d.length > 0);
   }
+  const characterTags = charData
+    .map((c) => c.description)
+    .filter((d): d is string => !!d && d.length > 0);
 
-  // Build enhanced prompt
-  const enhancedPrompt = buildVideoPrompt({
-    shotDescription: shot.description,
-    style: project.style,
-    cameraType: shot.cameraType,
-    characterTags,
-  });
+  let endpoint: string;
+  let input: Record<string, unknown>;
+  let actualModelKey = modelKey;
 
-  // Get character reference image for i2v
-  let imageUrl: string | undefined;
-  if (isImageToVideo && validCharacterIds.length > 0) {
-    const [char] = await db
-      .select()
-      .from(characters)
-      .where(eq(characters.id, validCharacterIds[0]))
-      .limit(1);
-    if (char && char.referenceImages.length > 0) {
-      imageUrl = char.referenceImages[0];
+  if (isRef && charData.length > 0) {
+    // ── Reference-to-video path ──
+    const provider = modelKey.startsWith("kling") ? "kling" : "vidu";
+    const enhancedPrompt = buildReferenceVideoPrompt({
+      shotDescription: shot.description,
+      style: project.style,
+      cameraType: shot.cameraType,
+      characters: charData.map((c) => ({ name: c.name, description: c.description })),
+      provider,
+    });
+
+    endpoint = getModelEndpoint(modelKey as VideoModelKey);
+    input = { prompt: enhancedPrompt, ...buildReferenceVideoInput(provider, charData) };
+  } else {
+    // ── Standard i2v / t2v path ──
+    const isImageToVideo = modelKey.endsWith("-i2v");
+    const enhancedPrompt = buildVideoPrompt({
+      shotDescription: shot.description,
+      style: project.style,
+      cameraType: shot.cameraType,
+      characterTags,
+    });
+
+    // Get character reference image for i2v
+    let imageUrl: string | undefined;
+    if (isImageToVideo && charData.length > 0) {
+      const char = charData[0];
+      if (char.referenceImages.length > 0) {
+        imageUrl = char.referenceImages[0];
+      }
     }
-  }
 
-  // Fall back to t2v if i2v requested but no image available
-  const actualModelKey = isImageToVideo && !imageUrl
-    ? (modelKey.replace("-i2v", "-t2v") as VideoModelKey)
-    : modelKey;
-  const endpoint = getModelEndpoint(actualModelKey);
-  const input: Record<string, unknown> = { prompt: enhancedPrompt };
-  if (isImageToVideo && imageUrl) {
-    input.image_url = imageUrl;
+    // Fall back to t2v if i2v requested but no image available
+    actualModelKey = isImageToVideo && !imageUrl
+      ? (modelKey.replace("-i2v", "-t2v") as VideoModelKey)
+      : modelKey;
+    endpoint = getModelEndpoint(actualModelKey as VideoModelKey);
+    input = { prompt: enhancedPrompt };
+    if (isImageToVideo && imageUrl) {
+      input.image_url = imageUrl;
+    }
   }
 
   try {
@@ -160,7 +180,7 @@ export async function POST(
       requestId: request_id,
       shotId: shot.id,
       model: actualModelKey,
-      prompt: enhancedPrompt,
+      prompt: input.prompt as string,
       creditsUsed: creditCost,
       balance: deduction.balance,
     });

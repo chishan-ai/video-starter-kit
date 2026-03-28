@@ -16,8 +16,18 @@ export const CREDIT_COSTS = {
   "vidu-q3-t2v": 10,
   "kling-3-pro-i2v": 30, // Kling 3.0 Pro (~3x Vidu cost)
   "kling-3-pro-t2v": 30,
+  // Reference-to-video models
+  "kling-o1-ref": 20,
+  "vidu-q1-ref": 15,
+  "vidu-q2-ref": 15,
+  // Image generation models
+  "flux-kontext-pro": 3,
+  "flux-kontext-max": 5,
+  "kling-image-o1": 2,
+  "character-design": 8,
   "flux-schnell": 1, // Character image generation
   "f5-tts": 2, // Text-to-speech per shot
+  "minimax-music": 3, // Background music generation (~$0.03)
   "export-720p": 5, // Export cost
   "export-1080p": 10,
 } as const;

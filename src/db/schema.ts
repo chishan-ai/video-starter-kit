@@ -96,6 +96,12 @@ export const characters = pgTable("characters", {
     .$type<string[]>()
     .notNull()
     .default([]),
+  characterSheetUrl: text("character_sheet_url"),
+  outfitDescription: text("outfit_description"),
+  accessories: jsonb("accessories")
+    .$type<{ type: string; description: string; imageUrl?: string }[]>()
+    .notNull()
+    .default([]),
   thumbnailUrl: text("thumbnail_url"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
@@ -113,6 +119,9 @@ export const projects = pgTable("projects", {
   status: projectStatusEnum("status").notNull().default("draft"),
   script: text("script").notNull().default(""),
   characterIds: jsonb("character_ids").$type<string[]>().notNull().default([]),
+  musicPrompt: text("music_prompt"),
+  musicUrl: text("music_url"),
+  musicRequestId: text("music_request_id"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

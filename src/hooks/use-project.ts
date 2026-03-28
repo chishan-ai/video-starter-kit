@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 // Types inferred from schema
-interface Project {
+export interface Project {
   id: string;
   userId: string;
   name: string;
@@ -12,11 +12,14 @@ interface Project {
   status: string;
   script: string;
   characterIds: string[];
+  musicPrompt: string | null;
+  musicUrl: string | null;
+  musicRequestId: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
-interface Shot {
+export interface Shot {
   id: string;
   projectId: string;
   order: number;
@@ -32,7 +35,7 @@ interface Shot {
   createdAt: string;
 }
 
-interface ShotVersion {
+export interface ShotVersion {
   id: string;
   shotId: string;
   videoUrl: string;
@@ -42,6 +45,20 @@ interface ShotVersion {
   creditsUsed: number;
   externalTaskId: string | null;
   generatedAt: string;
+}
+
+export interface Character {
+  id: string;
+  userId: string;
+  name: string;
+  gender: string | null;
+  description: string;
+  referenceImages: string[];
+  characterSheetUrl: string | null;
+  outfitDescription: string | null;
+  accessories: { type: string; description: string; imageUrl?: string }[];
+  thumbnailUrl: string | null;
+  createdAt: string;
 }
 
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
@@ -195,10 +212,209 @@ export function useGenerateTTS(projectId: string, shotId: string) {
   });
 }
 
+// ── Music hooks ──
+
+export function useGenerateMusic(projectId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { prompt: string; duration?: number }) =>
+      fetchJson<{
+        requestId: string;
+        model: string;
+        creditsUsed: number;
+        balance: number;
+      }>(`/api/projects/${projectId}/generate-music`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ["projects", projectId] }),
+  });
+}
+
+export function usePollMusicStatus(projectId: string, requestId: string | null) {
+  return useQuery<{ status: string; musicUrl?: string }>({
+    queryKey: ["projects", projectId, "music-status"],
+    queryFn: () =>
+      fetchJson(`/api/projects/${projectId}/music-status`, {
+        method: "POST",
+      }),
+    enabled: !!requestId,
+    refetchInterval: (query) => {
+      const s = query.state.data?.status;
+      return s === "generating" || !s ? 5000 : false;
+    },
+  });
+}
+
 export function useCreditsBalance() {
   return useQuery<{ balance: number }>({
     queryKey: ["credits"],
     queryFn: () => fetchJson("/api/credits"),
     staleTime: 10_000,
+  });
+}
+
+// ── Character hooks ──
+
+export function useCharacters() {
+  return useQuery<Character[]>({
+    queryKey: ["characters"],
+    queryFn: () => fetchJson("/api/characters"),
+  });
+}
+
+export function useCreateCharacter() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      name: string;
+      gender?: string;
+      description?: string;
+      referenceImages?: string[];
+      thumbnailUrl?: string;
+    }) =>
+      fetchJson<Character>("/api/characters", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["characters"] }),
+  });
+}
+
+export function useAnalyzeCharacter(characterId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (imageUrl: string) =>
+      fetchJson<{ features: Record<string, unknown>; description: string }>(
+        `/api/characters/${characterId}/analyze`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ imageUrl }),
+        },
+      ),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["characters"] }),
+  });
+}
+
+export function useGenerateCharacterDesign(characterId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { style?: "anime" | "realistic" | "3d"; generateSheet?: boolean }) =>
+      fetchJson<{
+        character: Character;
+        mainImageUrl: string;
+        characterSheetUrl?: string;
+        creditsUsed: number;
+        balance: number;
+      }>(`/api/characters/${characterId}/generate-design`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["characters"] });
+      qc.invalidateQueries({ queryKey: ["credits"] });
+    },
+  });
+}
+
+export function useEditCharacterOutfit(characterId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { instruction: string; model?: "flux-kontext-pro" | "flux-kontext-max" }) =>
+      fetchJson<{
+        character: Character;
+        editedImageUrl: string;
+        creditsUsed: number;
+        balance: number;
+      }>(`/api/characters/${characterId}/edit-outfit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["characters"] });
+      qc.invalidateQueries({ queryKey: ["credits"] });
+    },
+  });
+}
+
+// ── Shot mutations ──
+
+export function useDeleteShot(projectId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (shotId: string) =>
+      fetchJson(`/api/projects/${projectId}/shots/${shotId}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ["projects", projectId, "shots"] }),
+  });
+}
+
+export function useCreateShot(projectId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      description?: string;
+      order?: number;
+      duration?: number;
+      cameraType?: string;
+    }) =>
+      fetchJson<Shot>(`/api/projects/${projectId}/shots`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ["projects", projectId, "shots"] }),
+  });
+}
+
+export function useReorderShots(projectId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (orderedIds: string[]) =>
+      fetchJson(`/api/projects/${projectId}/shots/reorder`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderedIds }),
+      }),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ["projects", projectId, "shots"] }),
+  });
+}
+
+// ── Shot version hooks ──
+
+export function useShotVersions(projectId: string, shotId: string | null) {
+  return useQuery<ShotVersion[]>({
+    queryKey: ["projects", projectId, "shots", shotId, "versions"],
+    queryFn: () =>
+      fetchJson(`/api/projects/${projectId}/shots/${shotId}/versions`),
+    enabled: !!shotId,
+  });
+}
+
+export function useSelectVersion(projectId: string, shotId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (versionId: string) =>
+      fetchJson(`/api/projects/${projectId}/shots/${shotId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ selectedVersionId: versionId }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["projects", projectId, "shots"] });
+      qc.invalidateQueries({
+        queryKey: ["projects", projectId, "shots", shotId, "versions"],
+      });
+    },
   });
 }

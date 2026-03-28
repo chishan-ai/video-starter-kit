@@ -1,27 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import { Mic, Volume2 } from "lucide-react";
-import { useGenerateVideo, useGenerateTTS } from "@/hooks/use-project";
-
-interface Shot {
-  id: string;
-  projectId: string;
-  order: number;
-  description: string;
-  duration: number;
-  cameraType: string;
-  characterIds: string[];
-  status: string;
-  selectedVersionId: string | null;
-  voiceoverText: string | null;
-  ttsAudioUrl: string | null;
-  videoUrl: string | null;
-}
+import { useMemo, useState } from "react";
+import { Mic, Volume2, Users, Check } from "lucide-react";
+import {
+  useGenerateVideo,
+  useGenerateTTS,
+  useCharacters,
+  useShotVersions,
+  useSelectVersion,
+  type Shot,
+} from "@/hooks/use-project";
 
 interface ShotDetailPanelProps {
   shot: Shot;
   projectId: string;
+  projectCharacterIds: string[];
   onUpdate: (data: Partial<Shot>) => void;
 }
 
@@ -30,15 +23,24 @@ const CAMERA_TYPES = ["wide", "medium", "close-up", "overhead", "low-angle"];
 export function ShotDetailPanel({
   shot,
   projectId,
+  projectCharacterIds,
   onUpdate,
 }: ShotDetailPanelProps) {
   const [description, setDescription] = useState(shot.description);
   const [voiceoverText, setVoiceoverText] = useState(shot.voiceoverText ?? "");
   const generateVideo = useGenerateVideo(projectId, shot.id);
   const generateTTS = useGenerateTTS(projectId, shot.id);
+  const { data: allCharacters = [] } = useCharacters();
+  const { data: versions = [] } = useShotVersions(projectId, shot.id);
+  const selectVersion = useSelectVersion(projectId, shot.id);
 
   const isDirty = description !== shot.description;
   const isVoiceoverDirty = voiceoverText !== (shot.voiceoverText ?? "");
+
+  const projectChars = useMemo(() => {
+    const idSet = new Set(projectCharacterIds);
+    return allCharacters.filter((c) => idSet.has(c.id));
+  }, [allCharacters, projectCharacterIds]);
 
   function handleSave() {
     if (isDirty) {
@@ -48,6 +50,14 @@ export function ShotDetailPanel({
 
   function handleGenerate(model: string) {
     generateVideo.mutate(model);
+  }
+
+  function toggleShotCharacter(charId: string) {
+    const current = shot.characterIds ?? [];
+    const updated = current.includes(charId)
+      ? current.filter((id) => id !== charId)
+      : [...current, charId];
+    onUpdate({ characterIds: updated } as Partial<Shot>);
   }
 
   return (
@@ -75,10 +85,59 @@ export function ShotDetailPanel({
           <div className="flex aspect-video items-center justify-center rounded-lg border border-border bg-muted">
             <div className="text-center">
               <div className="mx-auto mb-2 h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-              <p className="text-xs text-muted-foreground">Generating video...</p>
+              <p className="text-xs text-muted-foreground">
+                Generating video...
+              </p>
             </div>
           </div>
         ) : null}
+
+        {/* Version Browser */}
+        {versions.length > 1 && (
+          <div>
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">
+              Versions ({versions.length})
+            </label>
+            <div className="flex gap-1.5 overflow-x-auto pb-1">
+              {versions.map((v) => {
+                const isSelected = shot.selectedVersionId === v.id;
+                return (
+                  <button
+                    key={v.id}
+                    type="button"
+                    onClick={() => selectVersion.mutate(v.id)}
+                    disabled={selectVersion.isPending}
+                    className={`group/v relative shrink-0 overflow-hidden rounded border transition-colors ${
+                      isSelected
+                        ? "border-primary ring-1 ring-primary/30"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    <video
+                      src={v.videoUrl}
+                      muted
+                      playsInline
+                      className="h-14 w-24 object-cover"
+                      onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.pause();
+                        e.currentTarget.currentTime = 0;
+                      }}
+                    />
+                    {isSelected && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-primary/20">
+                        <Check className="h-4 w-4 text-primary" />
+                      </div>
+                    )}
+                    <span className="absolute bottom-0 left-0 right-0 truncate bg-black/60 px-1 text-[9px] text-white">
+                      {v.model.split("/").pop()}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Description */}
         <div>
@@ -101,6 +160,42 @@ export function ShotDetailPanel({
             </button>
           )}
         </div>
+
+        {/* Characters in this shot */}
+        {projectChars.length > 0 && (
+          <div>
+            <label className="mb-1 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+              <Users className="h-3 w-3" />
+              Characters in this shot
+            </label>
+            <div className="flex flex-wrap gap-1.5">
+              {projectChars.map((char) => {
+                const isActive = (shot.characterIds ?? []).includes(char.id);
+                return (
+                  <button
+                    key={char.id}
+                    type="button"
+                    onClick={() => toggleShotCharacter(char.id)}
+                    className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs transition-colors ${
+                      isActive
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                    }`}
+                  >
+                    {char.thumbnailUrl || char.referenceImages?.[0] ? (
+                      <img
+                        src={char.thumbnailUrl ?? char.referenceImages?.[0]}
+                        alt=""
+                        className="h-4 w-4 rounded-full object-cover"
+                      />
+                    ) : null}
+                    {char.name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Camera Type */}
         <div>
@@ -224,6 +319,33 @@ export function ShotDetailPanel({
           >
             Generate (Kling 3.0) — 30 credits
           </button>
+
+          {/* Reference-to-video: multi-character consistency */}
+          {shot.characterIds.length > 0 && (
+            <>
+              <div className="pt-1">
+                <p className="text-[10px] text-muted-foreground">
+                  Multi-character consistency (uses character reference images):
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleGenerate("kling-o1-ref")}
+                disabled={shot.status === "generating" || generateVideo.isPending}
+                className="w-full rounded-md border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-sm text-blue-400 hover:bg-blue-500/20 disabled:opacity-50"
+              >
+                Generate (Kling O1 Ref) — 20 credits
+              </button>
+              <button
+                type="button"
+                onClick={() => handleGenerate("vidu-q2-ref")}
+                disabled={shot.status === "generating" || generateVideo.isPending}
+                className="w-full rounded-md border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-sm text-blue-400 hover:bg-blue-500/20 disabled:opacity-50"
+              >
+                Generate (Vidu Q2 Ref) — 15 credits
+              </button>
+            </>
+          )}
         </div>
 
         {/* Error */}
