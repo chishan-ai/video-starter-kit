@@ -58,6 +58,8 @@ const faqSchema = {
   })),
 };
 
+const faqSchemaJson = JSON.stringify(faqSchema);
+
 export default function FAQ() {
   const sectionRef = useScrollReveal();
 
@@ -66,7 +68,7 @@ export default function FAQ() {
       <Script
         id="faq-schema"
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        dangerouslySetInnerHTML={{ __html: faqSchemaJson }}
       />
       <section ref={sectionRef} className="pt-12 md:pt-16 pb-24 md:pb-32 relative">
         <div className="max-w-3xl mx-auto px-6 md:px-12">
