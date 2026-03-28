@@ -1,58 +1,75 @@
-import { FileText, Users, Video, Mic } from "lucide-react";
+"use client";
+
+import { useEffect } from "react";
+import { useScrollReveal } from "@/components/scroll-reveal";
 
 const features = [
   {
-    icon: FileText,
-    title: "Script to Storyboard",
+    title: "Shot-Level Control",
     description:
-      "Paste your script and AI splits it into shots with descriptions, camera angles, and voiceover text automatically.",
+      "Edit each shot independently — change description, regenerate video, adjust camera angle. No more starting over because one frame looks wrong.",
+    video: "/mock/feature-shots.mp4",
   },
   {
-    icon: Users,
     title: "Character Consistency",
     description:
-      "Upload reference images and AI extracts features. Every generated shot keeps your characters looking the same.",
+      "Upload reference images. AI extracts facial features, hair, outfit and injects them into every shot. Characters look the same from beginning to end.",
+    video: "/mock/feature-character.mp4",
   },
   {
-    icon: Video,
-    title: "AI Video Generation",
+    title: "Multi-Model Generation",
     description:
-      "Generate video for each shot using Vidu Q3, Kling 3 Pro, and more. Preview, iterate, and pick the best take.",
-  },
-  {
-    icon: Mic,
-    title: "AI Voiceover",
-    description:
-      "Generate natural voiceovers with F5-TTS directly from your shot scripts. No separate tools needed.",
+      "Generate with Vidu, Kling, and more. Compare outputs side-by-side for each shot and pick the best version. Built-in voiceover with F5-TTS.",
+    video: "/mock/feature-multimodel.mp4",
   },
 ];
 
 export default function Features() {
-  return (
-    <section id="features" className="py-20 border-t border-white/10">
-      <div className="container mx-auto px-4">
-        <div className="max-w-2xl mx-auto text-center mb-16">
-          <h2 className="text-3xl font-bold mb-4">
-            Everything you need, in one workflow
-          </h2>
-          <p className="text-gray-400">
-            Stop juggling 4-6 different tools. Mozoria handles the entire
-            pipeline from script to final video.
-          </p>
-        </div>
+  const sectionRef = useScrollReveal();
 
-        <div className="max-w-screen-md mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-          {features.map((feature) => (
-            <div
-              key={feature.title}
-              className="p-6 rounded-lg border border-white/10 bg-gradient-to-b from-white/5 to-transparent hover:border-purple-500/30 transition-colors"
-            >
-              <feature.icon className="w-10 h-10 mb-4 text-purple-400" />
-              <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-              <p className="text-gray-400">{feature.description}</p>
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const videos = el.querySelectorAll("video");
+    const observer = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((e) => {
+          const video = e.target as HTMLVideoElement;
+          if (e.isIntersecting) video.play().catch(() => {});
+          else video.pause();
+        }),
+      { threshold: 0.25 }
+    );
+    videos.forEach((v) => observer.observe(v));
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <section id="features" ref={sectionRef} className="py-24 md:py-32">
+      <div className="max-w-6xl mx-auto px-6 md:px-12 space-y-32">
+        {features.map((feature, i) => (
+          <div key={feature.title} className={`reveal reveal-delay-${(i % 3) + 1}`}>
+            <div className="flex flex-col md:flex-row md:items-baseline gap-4 md:gap-0 mb-10">
+              <h3 className="text-3xl md:text-4xl font-bold text-white md:w-2/5 shrink-0">
+                {feature.title}
+              </h3>
+              <div className="hidden md:block w-px h-8 bg-gray-700 mx-8 self-center" />
+              <p className="text-gray-400 text-base md:text-lg leading-relaxed">
+                {feature.description}
+              </p>
             </div>
-          ))}
-        </div>
+
+            <div className="relative aspect-video rounded-2xl overflow-hidden bg-white/[0.03] border border-white/[0.06]">
+              <video
+                className="w-full h-full object-cover"
+                src={feature.video}
+                muted
+                loop
+                playsInline
+              />
+            </div>
+          </div>
+        ))}
       </div>
     </section>
   );

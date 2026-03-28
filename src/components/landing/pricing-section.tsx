@@ -1,31 +1,25 @@
 "use client";
 
+import { useScrollReveal } from "@/components/scroll-reveal";
 import { PricingTable } from "@/components/billing/pricing-table";
 
 export function PricingSection() {
+  const sectionRef = useScrollReveal();
+
   return (
-    <section id="pricing" className="py-20 border-t border-white/10">
-      <div className="container mx-auto px-4">
-        <div className="max-w-2xl mx-auto text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">
-            Simple, transparent pricing
+    <section id="pricing" ref={sectionRef} className="pt-12 md:pt-16 pb-24 md:pb-32 relative">
+      <div className="max-w-6xl mx-auto px-6 md:px-12">
+        <div className="mb-16 reveal text-center">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-[1.05] text-white">
+            Simple pricing.
           </h2>
-          <p className="text-gray-400">
-            Start free. Upgrade when you need more credits. No hidden fees.
+          <p className="mt-4 text-gray-500 text-base max-w-lg mx-auto">
+            50 free credits to start. No credit card required. Credits never expire.
           </p>
         </div>
 
-        <PricingTable showCta={false} />
-
-        <div className="mt-12 max-w-xl mx-auto text-center text-sm text-gray-500 space-y-2">
-          <p>
-            All plans include 1080p export, character consistency, and AI
-            voiceover.
-          </p>
-          <p>
-            Need more credits? Purchase one-time packs anytime. Credits never
-            expire.
-          </p>
+        <div className="reveal reveal-delay-1">
+          <PricingTable showCta={false} />
         </div>
       </div>
     </section>

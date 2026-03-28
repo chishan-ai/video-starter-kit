@@ -2,59 +2,53 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
+const PLACEHOLDER =
+  "A young samurai stands at the edge of a burning village. The wind carries embers past his face...";
+
 export default function Hero() {
   return (
-    <section className="pt-32 pb-16 md:pt-40 md:pb-24">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center rounded-full border border-purple-500/30 bg-purple-500/10 px-4 py-1.5 text-sm mb-8">
-            <span className="text-purple-300">
-              AI-Powered Storyboard Studio
-            </span>
-          </div>
+    <section className="relative h-screen flex flex-col justify-end overflow-hidden">
+      <video
+        className="absolute inset-0 w-full h-full object-cover"
+        src="/mock/hero-bg.mp4"
+        muted
+        loop
+        playsInline
+        autoPlay
+      />
 
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-8 bg-gradient-to-r from-white via-purple-200 to-purple-400 bg-clip-text text-transparent">
-            Turn Scripts into Anime
-            <br />
-            Shot by Shot
-          </h1>
+      <div className="absolute inset-0 bg-gradient-to-t from-[#0c0d14] via-[#0c0d14]/70 to-transparent" />
 
-          <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-12">
-            Upload your script, define characters, and let AI generate
-            storyboards with consistent characters, voiceovers, and video. All
-            in one place.
-          </p>
+      <div className="relative z-10 w-full max-w-4xl mx-auto px-6 md:px-12 pb-16 text-center">
+        <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[0.95] text-white mb-4">
+          From script to anime.
+        </h1>
+        <p className="text-gray-300 text-base md:text-lg mb-8 max-w-lg mx-auto">
+          AI storyboard studio — paste a script, get shots with consistent
+          characters, voiceover & video.
+        </p>
 
-          <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-16">
+        <div className="max-w-2xl mx-auto">
+          <div className="flex items-center gap-3 bg-white/[0.08] backdrop-blur-md border border-white/[0.12] rounded-full px-2 py-2 script-input-glow">
+            <input
+              type="text"
+              placeholder={PLACEHOLDER}
+              className="flex-1 bg-transparent text-white placeholder:text-gray-500 text-sm md:text-base focus:outline-none px-4"
+            />
             <Link href="/login">
-              <Button
-                size="lg"
-                className="bg-purple-600 text-white hover:bg-purple-500 min-w-[200px]"
-              >
-                Start Creating Free
-                <ArrowRight className="ml-2 h-5 w-5" />
+              <Button className="bg-white text-black font-semibold hover:bg-gray-100 rounded-full px-6 h-10 text-sm shrink-0">
+                Create
+                <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </Link>
           </div>
-        </div>
 
-        {/* App Screenshot Placeholder */}
-        <div className="relative group max-w-5xl mx-auto">
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/30 to-blue-500/30 blur-3xl opacity-20" />
-          <div className="relative rounded-xl border border-white/10 bg-gradient-to-b from-white/5 to-transparent p-1">
-            <div className="rounded-lg bg-black/80 aspect-video flex items-center justify-center">
-              <div className="text-center space-y-3">
-                <div className="flex items-center justify-center gap-3">
-                  <div className="w-24 h-16 rounded bg-purple-500/20 border border-purple-500/30" />
-                  <div className="w-24 h-16 rounded bg-purple-500/20 border border-purple-500/30" />
-                  <div className="w-24 h-16 rounded bg-purple-500/20 border border-purple-500/30" />
-                  <div className="w-24 h-16 rounded bg-purple-500/20 border border-purple-500/30" />
-                </div>
-                <p className="text-sm text-gray-500">
-                  Storyboard Editor Preview
-                </p>
-              </div>
-            </div>
+          <div className="flex items-center justify-center gap-5 mt-4 text-xs text-gray-500">
+            <span>50 free credits</span>
+            <span className="w-1 h-1 rounded-full bg-gray-600" />
+            <span>No credit card</span>
+            <span className="w-1 h-1 rounded-full bg-gray-600" />
+            <span>Start in 30 seconds</span>
           </div>
         </div>
       </div>
