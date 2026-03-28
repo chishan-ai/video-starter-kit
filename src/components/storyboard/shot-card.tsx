@@ -1,24 +1,14 @@
 "use client";
 
-import { Mic } from "lucide-react";
+import { Mic, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-interface Shot {
-  id: string;
-  order: number;
-  description: string;
-  duration: number;
-  cameraType: string;
-  status: string;
-  selectedVersionId: string | null;
-  ttsAudioUrl: string | null;
-  videoUrl: string | null;
-}
+import { type Shot } from "@/hooks/use-project";
 
 interface ShotCardProps {
   shot: Shot;
   isSelected: boolean;
   onClick: () => void;
+  onDelete: () => void;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -39,13 +29,16 @@ export function ShotCard({
   shot,
   isSelected,
   onClick,
+  onDelete,
 }: ShotCardProps) {
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onClick(); }}
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-lg border text-left transition-all",
+        "group relative flex flex-col overflow-hidden rounded-lg border text-left transition-all cursor-pointer",
         isSelected
           ? "border-primary ring-2 ring-primary/20"
           : "border-border hover:border-primary/50",
@@ -99,6 +92,18 @@ export function ShotCard({
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent" />
           </div>
         )}
+
+        {/* Delete button — visible on hover */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+          className="absolute left-1 top-1 rounded bg-red-500/80 p-1 text-white opacity-0 transition-opacity hover:bg-red-600 group-hover:opacity-100"
+        >
+          <Trash2 className="h-3 w-3" />
+        </button>
       </div>
 
       {/* Info */}
@@ -112,6 +117,6 @@ export function ShotCard({
           {shot.description || "No description"}
         </p>
       </div>
-    </button>
+    </div>
   );
 }
