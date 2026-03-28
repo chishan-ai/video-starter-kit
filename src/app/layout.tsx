@@ -1,7 +1,20 @@
 import type { Metadata } from "next";
+import { Outfit, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { Providers } from "@/components/providers";
 import "./globals.css";
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-outfit",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Mozoria - AI Storyboard Studio for Anime Creators",
@@ -30,7 +43,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased dark">
+      <body className={`${outfit.variable} ${jetbrainsMono.variable} antialiased dark`}>
         <Providers>{children}</Providers>
         <Analytics />
       </body>

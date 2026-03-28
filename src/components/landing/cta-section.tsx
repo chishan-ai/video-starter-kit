@@ -1,25 +1,27 @@
+"use client";
+
 import Link from "next/link";
+import { useScrollReveal } from "@/components/scroll-reveal";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
 export function CtaSection() {
+  const sectionRef = useScrollReveal();
+
   return (
-    <section className="py-20 border-t border-white/10">
-      <div className="container mx-auto px-4">
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-4">
-            Ready to create your first AI animation?
+    <section ref={sectionRef} className="py-32 md:py-40 relative text-center">
+      <div className="max-w-4xl mx-auto px-6 md:px-12">
+        <div className="reveal">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-[1.05] text-white mb-6">
+            Start creating now.
           </h2>
-          <p className="text-gray-400 mb-8">
-            50 free credits to start. No credit card required.
+          <p className="text-gray-500 text-base mb-10 max-w-md mx-auto">
+            50 free credits. No credit card. Start in 30 seconds.
           </p>
           <Link href="/login">
-            <Button
-              size="lg"
-              className="bg-purple-600 text-white hover:bg-purple-500 min-w-[200px]"
-            >
-              Get Started Free
-              <ArrowRight className="ml-2 h-5 w-5" />
+            <Button className="bg-white text-black font-semibold hover:bg-gray-100 rounded-full px-8 h-12 text-base gap-2">
+              Try Mozoria Free
+              <ArrowRight className="w-5 h-5" />
             </Button>
           </Link>
         </div>

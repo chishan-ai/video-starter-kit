@@ -1,78 +1,64 @@
 import Link from "next/link";
-import { Film } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="border-t border-white/10 py-12">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-2 max-w-screen-md md:grid-cols-3 gap-8 mx-auto">
-          <div className="flex flex-col items-start">
-            <div className="flex items-center space-x-2 mb-4">
-              <Film className="w-6 h-6 text-purple-400" />
-              <span className="font-bold">Mozoria</span>
-            </div>
-            <p className="text-sm text-gray-400">
-              AI storyboard studio
-              <br />
-              for anime creators.
+    <footer className="relative z-10 border-t border-white/[0.04] py-16">
+      <div className="max-w-6xl mx-auto px-6 md:px-12">
+        <div className="flex flex-col md:flex-row justify-between gap-10">
+          {/* Brand */}
+          <div>
+            <span className="font-bold text-white text-base">Mozoria</span>
+            <p className="text-sm text-gray-600 mt-2">
+              AI storyboard studio for anime creators.
             </p>
           </div>
 
-          <div className="flex flex-col items-center text-center">
-            <h4 className="font-semibold mb-4">Product</h4>
-            <ul className="space-y-2 text-sm text-gray-400">
-              <li>
-                <Link
-                  href="#features"
-                  className="hover:text-white transition-colors"
-                >
-                  Features
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#pricing"
-                  className="hover:text-white transition-colors"
-                >
-                  Pricing
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/login"
-                  className="hover:text-white transition-colors"
-                >
-                  Get Started
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div className="flex flex-col items-center text-center">
-            <h4 className="font-semibold mb-4">Legal</h4>
-            <ul className="space-y-2 text-sm text-gray-400">
-              <li>
-                <Link
-                  href="/terms"
-                  className="hover:text-white transition-colors"
-                >
-                  Terms of Service
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/privacy"
-                  className="hover:text-white transition-colors"
-                >
-                  Privacy Policy
-                </Link>
-              </li>
-            </ul>
+          {/* Links */}
+          <div className="flex gap-16">
+            <div>
+              <h4 className="text-xs font-medium text-gray-500 tracking-wider uppercase mb-4">
+                Product
+              </h4>
+              <ul className="space-y-2.5 text-sm text-gray-600">
+                <li>
+                  <Link href="#features" className="hover:text-white transition-colors">
+                    Features
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#pricing" className="hover:text-white transition-colors">
+                    Pricing
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/login" className="hover:text-white transition-colors">
+                    Get Started
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-xs font-medium text-gray-500 tracking-wider uppercase mb-4">
+                Legal
+              </h4>
+              <ul className="space-y-2.5 text-sm text-gray-600">
+                <li>
+                  <Link href="/terms" className="hover:text-white transition-colors">
+                    Terms
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/privacy" className="hover:text-white transition-colors">
+                    Privacy
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-white/10 text-center text-sm text-gray-500">
-          &copy; {new Date().getFullYear()} Mozoria. All rights reserved.
+        <div className="mt-12 pt-8 border-t border-white/[0.04] text-xs text-gray-700">
+          &copy; {new Date().getFullYear()} Mozoria
         </div>
       </div>
     </footer>
