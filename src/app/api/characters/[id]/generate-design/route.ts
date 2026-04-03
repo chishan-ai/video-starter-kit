@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { characters } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
-import { createClient } from "@/lib/supabase/server";
-import { deductCredits, CREDIT_COSTS } from "@/lib/credits";
+import { eq } from "drizzle-orm";
+import { deductCredits, addCredits, CREDIT_COSTS } from "@/lib/credits";
 import { falServer, getImageEndpoint, extractImageUrl } from "@/lib/fal-server";
 import { STYLE_MODIFIERS } from "@/lib/prompt-enhancer";
+import { getAuthenticatedCharacter } from "@/lib/character-helpers";
 import { z } from "zod";
 
 const designSchema = z.object({
@@ -19,24 +19,9 @@ export async function POST(
   request: Request,
   { params }: { params: { id: string } },
 ) {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const [character] = await db
-    .select()
-    .from(characters)
-    .where(and(eq(characters.id, params.id), eq(characters.userId, user.id)))
-    .limit(1);
-
-  if (!character) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
+  const auth = await getAuthenticatedCharacter(params.id);
+  if (!auth.ok) return auth.response;
+  const { user, character } = auth;
 
   if (!character.description || character.description.trim().length === 0) {
     return NextResponse.json(
@@ -78,6 +63,7 @@ export async function POST(
 
   const styleModifier = STYLE_MODIFIERS[style] ?? STYLE_MODIFIERS.anime;
 
+  let sheetError: string | undefined;
   try {
     // Step 1: Generate main character image (full body, front view)
     const mainPrompt = `Full body character design, front view, neutral pose, ${character.description}, ${styleModifier}, white background, character concept art, high quality`;
@@ -98,13 +84,20 @@ export async function POST(
             input: { prompt: sheetPrompt, image_size: "landscape_16_9", num_images: 1 },
           }),
         );
-      } catch {
-        // Sheet generation is optional — continue with main image only
+      } catch (sheetErr) {
+        console.error(
+          `[generate-design] Sheet generation failed for character ${character.id}:`,
+          sheetErr instanceof Error ? sheetErr.message : sheetErr,
+        );
+        sheetError = sheetErr instanceof Error ? sheetErr.message : "Sheet generation failed";
       }
     }
 
     // Update character with generated images
-    const updatedRefs = [mainImageUrl, ...character.referenceImages];
+    const updatedRefs = [
+      { url: mainImageUrl, angle: "front" as const },
+      ...character.referenceImages,
+    ];
     const [updated] = await db
       .update(characters)
       .set({
@@ -119,12 +112,12 @@ export async function POST(
       character: updated,
       mainImageUrl,
       characterSheetUrl: sheetUrl,
+      sheetError,
       creditsUsed: creditCost,
       balance: deduction.balance,
     });
   } catch (error) {
     // Refund on failure
-    const { addCredits } = await import("@/lib/credits");
     await addCredits(
       user.id,
       creditCost,

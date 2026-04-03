@@ -113,19 +113,33 @@ export function buildReferenceVideoPrompt(ctx: ReferencePromptContext): string {
   return parts.join(", ");
 }
 
+export type ReferenceImage = {
+  url: string;
+  angle: "front" | "right" | "back" | "left" | "custom";
+  label?: string;
+};
+
+/** Pick the best frontal image: prefer 'front' angle, fallback to first. */
+function pickFrontalUrl(images: ReferenceImage[]): string {
+  const front = images.find((img) => img.angle === "front");
+  return (front ?? images[0]).url;
+}
+
 /** Build the provider-specific input payload for reference-to-video models. */
 export function buildReferenceVideoInput(
   provider: "kling" | "vidu",
-  charData: { referenceImages: string[] }[],
+  charData: { referenceImages: ReferenceImage[] }[],
 ): Record<string, unknown> {
   if (provider === "kling") {
     return {
       elements: charData.slice(0, 3).map((c) => ({
-        frontal_image_url: c.referenceImages[0],
-        reference_image_urls: c.referenceImages.slice(0, 3),
+        frontal_image_url: pickFrontalUrl(c.referenceImages),
+        reference_image_urls: c.referenceImages.slice(0, 3).map((r) => r.url),
       })),
     };
   }
-  const allRefs = charData.flatMap((c) => c.referenceImages.slice(0, 3));
+  const allRefs = charData.flatMap((c) =>
+    c.referenceImages.slice(0, 3).map((r) => r.url),
+  );
   return { reference_image_urls: allRefs.slice(0, 7) };
 }

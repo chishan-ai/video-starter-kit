@@ -53,11 +53,13 @@ export async function POST(request: Request) {
     );
   }
 
+  const { referenceImages: rawImages, ...rest } = parsed.data;
   const [character] = await db
     .insert(characters)
     .values({
       userId: user.id,
-      ...parsed.data,
+      ...rest,
+      referenceImages: rawImages.map((url) => ({ url, angle: "custom" as const })),
     })
     .returning();
 

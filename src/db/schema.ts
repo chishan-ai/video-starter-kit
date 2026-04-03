@@ -93,7 +93,7 @@ export const characters = pgTable("characters", {
   gender: text("gender"),
   description: text("description").notNull().default(""),
   referenceImages: jsonb("reference_images")
-    .$type<string[]>()
+    .$type<{ url: string; angle: "front" | "right" | "back" | "left" | "custom"; label?: string }[]>()
     .notNull()
     .default([]),
   characterSheetUrl: text("character_sheet_url"),

@@ -37,7 +37,7 @@ export async function POST(
   }
 
   // Analyze the first reference image
-  const features = await analyzeCharacterImage(character.referenceImages[0]);
+  const features = await analyzeCharacterImage(character.referenceImages[0].url);
 
   // Update character description with AI-generated analysis
   const [updated] = await db

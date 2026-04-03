@@ -86,7 +86,7 @@ export async function POST(
   );
   let charMap = new Map<
     string,
-    { description: string; referenceImages: string[] }
+    { description: string; referenceImages: { url: string; angle: "front" | "right" | "back" | "left" | "custom"; label?: string }[] }
   >();
   if (allCharacterIds.length > 0) {
     const chars = await db
@@ -141,7 +141,7 @@ export async function POST(
       if (isImageToVideo && shot.characterIds.length > 0) {
         const charData = charMap.get(shot.characterIds[0]);
         if (charData && charData.referenceImages.length > 0) {
-          imageUrl = charData.referenceImages[0];
+          imageUrl = charData.referenceImages[0].url;
         }
       }
 

@@ -225,7 +225,7 @@ function CharacterItem({
               {character.referenceImages.slice(0, 4).map((img, i) => (
                 <img
                   key={`ref-${character.id}-${i}`}
-                  src={img}
+                  src={img.url}
                   alt={`${character.name} ref ${i + 1}`}
                   className="h-12 w-12 rounded object-cover"
                 />
@@ -366,7 +366,7 @@ function CharacterAvatar({
 }) {
   const dim = size === "sm" ? "h-6 w-6" : "h-8 w-8";
   const src =
-    character.thumbnailUrl ?? character.referenceImages[0] ?? null;
+    character.thumbnailUrl ?? character.referenceImages[0]?.url ?? null;
 
   if (src) {
     return (

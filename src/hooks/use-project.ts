@@ -53,7 +53,7 @@ export interface Character {
   name: string;
   gender: string | null;
   description: string;
-  referenceImages: string[];
+  referenceImages: { url: string; angle: "front" | "right" | "back" | "left" | "custom"; label?: string }[];
   characterSheetUrl: string | null;
   outfitDescription: string | null;
   accessories: { type: string; description: string; imageUrl?: string }[];

@@ -182,9 +182,9 @@ export function ShotDetailPanel({
                         : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
                     }`}
                   >
-                    {char.thumbnailUrl || char.referenceImages?.[0] ? (
+                    {char.thumbnailUrl || char.referenceImages?.[0]?.url ? (
                       <img
-                        src={char.thumbnailUrl ?? char.referenceImages?.[0]}
+                        src={char.thumbnailUrl ?? char.referenceImages?.[0]?.url}
                         alt=""
                         className="h-4 w-4 rounded-full object-cover"
                       />

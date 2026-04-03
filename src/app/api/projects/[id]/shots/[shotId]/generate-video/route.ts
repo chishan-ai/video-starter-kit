@@ -102,7 +102,7 @@ export async function POST(
   const validCharacterIds = shot.characterIds.filter((id) => UUID_RE.test(id));
 
   // Load character data (used for both prompt tags and reference images)
-  let charData: { id: string; name: string; description: string; referenceImages: string[] }[] = [];
+  let charData: { id: string; name: string; description: string; referenceImages: { url: string; angle: "front" | "right" | "back" | "left" | "custom"; label?: string }[] }[] = [];
   if (validCharacterIds.length > 0) {
     charData = await db
       .select()
@@ -145,7 +145,7 @@ export async function POST(
     if (isImageToVideo && charData.length > 0) {
       const char = charData[0];
       if (char.referenceImages.length > 0) {
-        imageUrl = char.referenceImages[0];
+        imageUrl = char.referenceImages[0].url;
       }
     }
 

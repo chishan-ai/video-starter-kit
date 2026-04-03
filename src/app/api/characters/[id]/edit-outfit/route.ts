@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { characters } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
-import { createClient } from "@/lib/supabase/server";
-import { deductCredits, CREDIT_COSTS } from "@/lib/credits";
+import { eq } from "drizzle-orm";
+import { deductCredits, addCredits, CREDIT_COSTS } from "@/lib/credits";
 import { falServer, getImageEndpoint, extractImageUrl } from "@/lib/fal-server";
+import { getAuthenticatedCharacter } from "@/lib/character-helpers";
 import { z } from "zod";
 
 const editOutfitSchema = z.object({
@@ -18,26 +18,11 @@ export async function POST(
   request: Request,
   { params }: { params: { id: string } },
 ) {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const auth = await getAuthenticatedCharacter(params.id);
+  if (!auth.ok) return auth.response;
+  const { user, character } = auth;
 
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const [character] = await db
-    .select()
-    .from(characters)
-    .where(and(eq(characters.id, params.id), eq(characters.userId, user.id)))
-    .limit(1);
-
-  if (!character) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-
-  if (character.referenceImages.length === 0) {
+  if (!character.referenceImages.length) {
     return NextResponse.json(
       { error: "Character must have at least one reference image to edit" },
       { status: 400 },
@@ -82,13 +67,16 @@ export async function POST(
       await falServer.subscribe(getImageEndpoint(model), {
         input: {
           prompt: instruction,
-          image_url: character.referenceImages[0],
+          image_url: character.referenceImages[0].url,
         },
       }),
     );
 
     // Add edited image to reference images (prepend so it becomes the primary)
-    const updatedRefs = [editedImageUrl, ...character.referenceImages];
+    const updatedRefs = [
+      { url: editedImageUrl, angle: "front" as const, label: "outfit edit" },
+      ...character.referenceImages,
+    ];
     const [updated] = await db
       .update(characters)
       .set({
@@ -106,7 +94,6 @@ export async function POST(
       balance: deduction.balance,
     });
   } catch (error) {
-    const { addCredits } = await import("@/lib/credits");
     await addCredits(
       user.id,
       creditCost,

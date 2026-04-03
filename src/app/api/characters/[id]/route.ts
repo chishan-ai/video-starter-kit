@@ -63,9 +63,14 @@ export async function PATCH(
     );
   }
 
+  const { referenceImages: rawImages, ...rest } = parsed.data;
+  const setData: Record<string, unknown> = { ...rest };
+  if (rawImages) {
+    setData.referenceImages = rawImages.map((url) => ({ url, angle: "custom" as const }));
+  }
   const [updated] = await db
     .update(characters)
-    .set(parsed.data)
+    .set(setData)
     .where(and(eq(characters.id, params.id), eq(characters.userId, user.id)))
     .returning();
 

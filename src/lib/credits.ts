@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { users, creditTransactions } from "@/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 
 export type CreditType =
   | "purchase"
@@ -49,28 +49,19 @@ export async function deductCredits(
   description: string,
   relatedId?: string,
 ): Promise<{ success: boolean; balance: number }> {
-  // Atomic deduction: check balance and deduct in one query
+  // Atomic check-and-deduct: only succeeds if balance >= amount
   const [updated] = await db
     .update(users)
     .set({
       creditsBalance: sql`${users.creditsBalance} - ${amount}`,
       updatedAt: new Date(),
     })
-    .where(eq(users.id, userId))
+    .where(and(eq(users.id, userId), sql`${users.creditsBalance} >= ${amount}`))
     .returning({ creditsBalance: users.creditsBalance });
 
-  if (!updated || updated.creditsBalance < 0) {
-    // Rollback if balance went negative
-    if (updated) {
-      await db
-        .update(users)
-        .set({
-          creditsBalance: sql`${users.creditsBalance} + ${amount}`,
-          updatedAt: new Date(),
-        })
-        .where(eq(users.id, userId));
-    }
-    return { success: false, balance: (updated?.creditsBalance ?? 0) + amount };
+  if (!updated) {
+    const balance = await getBalance(userId);
+    return { success: false, balance };
   }
 
   // Record the transaction
