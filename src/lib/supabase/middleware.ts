@@ -54,11 +54,25 @@ export async function updateSession(request: NextRequest) {
   if (!user && !isPublicPath && !isApiAuth && !isWebhook && !isStaticAsset) {
     // API routes should return 401 JSON, not redirect
     if (request.nextUrl.pathname.startsWith("/api/")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      const res = NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      // Carry over any refreshed cookies so the browser stores them
+      supabaseResponse.headers.forEach((value, key) => {
+        if (key.toLowerCase() === "set-cookie") {
+          res.headers.append(key, value);
+        }
+      });
+      return res;
     }
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    return NextResponse.redirect(url);
+    const res = NextResponse.redirect(url);
+    // Carry over any refreshed cookies so the browser stores them
+    supabaseResponse.headers.forEach((value, key) => {
+      if (key.toLowerCase() === "set-cookie") {
+        res.headers.append(key, value);
+      }
+    });
+    return res;
   }
 
   return supabaseResponse;
