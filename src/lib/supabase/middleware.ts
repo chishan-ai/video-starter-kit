@@ -51,6 +51,19 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/_next") ||
     request.nextUrl.pathname.includes(".");
 
+  // Redirect logged-in users away from landing/login pages to dashboard
+  if (user && (request.nextUrl.pathname === "/" || request.nextUrl.pathname === "/login")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/dashboard";
+    const res = NextResponse.redirect(url);
+    supabaseResponse.headers.forEach((value, key) => {
+      if (key.toLowerCase() === "set-cookie") {
+        res.headers.append(key, value);
+      }
+    });
+    return res;
+  }
+
   if (!user && !isPublicPath && !isApiAuth && !isWebhook && !isStaticAsset) {
     // API routes should return 401 JSON, not redirect
     if (request.nextUrl.pathname.startsWith("/api/")) {
