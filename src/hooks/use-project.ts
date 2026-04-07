@@ -283,6 +283,7 @@ export function useUpdateCharacter(id: string) {
       outfitDescription?: string;
       referenceImages?: string[];
       thumbnailUrl?: string | null;
+      accessories?: { type: string; description: string; imageUrl?: string }[];
     }) =>
       fetchJson<Character>(`/api/characters/${id}`, {
         method: "PATCH",

@@ -114,7 +114,7 @@ export function ShotDetailPanel({
   );
 
   return (
-    <div className="flex h-full flex-col border-l border-border bg-background">
+    <div className="flex h-full flex-col border-l border-border bg-card">
       <div className="border-b border-border p-4">
         <h3 className="text-sm font-medium">Shot {shot.order + 1}</h3>
         <span className="text-xs capitalize text-muted-foreground">
@@ -386,7 +386,7 @@ export function ShotDetailPanel({
             </button>
           </div>
           {shot.ttsAudioUrl && (
-            <div className="mt-2 flex items-center gap-2 rounded-md border border-border bg-secondary/30 p-2">
+            <div className="mt-2 flex items-center gap-2 rounded-md border border-border bg-secondary/50 p-2">
               <Volume2 className="h-4 w-4 text-muted-foreground" />
               <audio src={shot.ttsAudioUrl} controls className="h-8 flex-1" />
             </div>
@@ -403,6 +403,52 @@ export function ShotDetailPanel({
           <label className="mb-1 block text-xs font-medium text-muted-foreground">
             Generate Video
           </label>
+
+          {/* Character reference status */}
+          {(() => {
+            const shotChars = projectChars.filter((c) =>
+              (shot.characterIds ?? []).includes(c.id),
+            );
+            const totalRefs = shotChars.reduce(
+              (sum, c) => sum + c.referenceImages.length,
+              0,
+            );
+            if (shotChars.length > 0) {
+              return (
+                <div className="rounded-md border border-green-500/30 bg-green-500/10 p-2">
+                  <p className="text-[10px] font-medium text-green-400">
+                    {shotChars.length} character{shotChars.length > 1 ? "s" : ""} assigned · {totalRefs} reference image{totalRefs !== 1 ? "s" : ""}
+                  </p>
+                  <div className="mt-1 flex gap-1">
+                    {shotChars.map((c) => (
+                      <span
+                        key={c.id}
+                        className="inline-flex items-center gap-1 rounded-full bg-green-500/20 px-1.5 py-0.5 text-[9px] text-green-300"
+                      >
+                        {(c.thumbnailUrl ?? c.referenceImages?.[0]?.url) ? (
+                          <img
+                            src={c.thumbnailUrl ?? c.referenceImages[0]?.url}
+                            alt=""
+                            className="h-3 w-3 rounded-full object-cover"
+                          />
+                        ) : null}
+                        {c.name}
+                        <span className="text-green-400/60">
+                          ({c.referenceImages.length})
+                        </span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              );
+            }
+            return (
+              <p className="rounded-md border border-border bg-card p-2 text-[10px] text-muted-foreground">
+                No characters assigned. Toggle characters above to enable reference-to-video generation.
+              </p>
+            );
+          })()}
+
           <button
             type="button"
             onClick={() => handleGenerate("vidu-q3-i2v")}
@@ -427,7 +473,7 @@ export function ShotDetailPanel({
             <>
               <div className="pt-1">
                 <p className="text-[10px] text-muted-foreground">
-                  Multi-character consistency (uses character reference images):
+                  Character consistency mode (uses reference images for identity preservation):
                 </p>
               </div>
               <button

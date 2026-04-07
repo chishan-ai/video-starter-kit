@@ -12,6 +12,15 @@ const updateCharacterSchema = z.object({
   outfitDescription: z.string().nullable().optional(),
   referenceImages: z.array(z.string()).optional(),
   thumbnailUrl: z.string().nullable().optional(),
+  accessories: z
+    .array(
+      z.object({
+        type: z.string().min(1).max(50),
+        description: z.string().min(1).max(200),
+        imageUrl: z.string().optional(),
+      }),
+    )
+    .optional(),
 });
 
 // GET /api/characters/:id
@@ -64,10 +73,13 @@ export async function PATCH(
     );
   }
 
-  const { referenceImages: rawImages, ...rest } = parsed.data;
+  const { referenceImages: rawImages, accessories, ...rest } = parsed.data;
   const setData: Record<string, unknown> = { ...rest };
   if (rawImages) {
     setData.referenceImages = rawImages.map((url) => ({ url, angle: "custom" as const }));
+  }
+  if (accessories !== undefined) {
+    setData.accessories = accessories;
   }
   const [updated] = await db
     .update(characters)

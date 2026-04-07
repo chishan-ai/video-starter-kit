@@ -12,6 +12,9 @@ import {
   Shirt,
   UserCircle,
   ChevronRight,
+  Plus,
+  X,
+  Gem,
 } from "lucide-react";
 import {
   useCharacter,
@@ -31,6 +34,19 @@ interface CharacterDetailProps {
   characterId: string;
 }
 
+const ACCESSORY_TYPES = [
+  "hat",
+  "glasses",
+  "necklace",
+  "earrings",
+  "bracelet",
+  "bag",
+  "scarf",
+  "belt",
+  "watch",
+  "other",
+] as const;
+
 export function CharacterDetail({ characterId }: CharacterDetailProps) {
   const router = useRouter();
   const { data: character, isLoading } = useCharacter(characterId);
@@ -45,6 +61,10 @@ export function CharacterDetail({ characterId }: CharacterDetailProps) {
   const [style, setStyle] = useState<"anime" | "realistic" | "3d">("anime");
   const [outfitInput, setOutfitInput] = useState("");
   const [initialized, setInitialized] = useState(false);
+
+  // Accessory form state
+  const [newAccessoryType, setNewAccessoryType] = useState<string>("hat");
+  const [newAccessoryDesc, setNewAccessoryDesc] = useState("");
 
   // Initialize form when data loads
   if (character && !initialized) {
@@ -99,12 +119,34 @@ export function CharacterDetail({ characterId }: CharacterDetailProps) {
     setOutfitInput("");
   }
 
+  function handleAddAccessory() {
+    if (!newAccessoryDesc.trim()) return;
+    const current = character?.accessories ?? [];
+    const newAcc = {
+      type: newAccessoryType,
+      description: newAccessoryDesc.trim(),
+    };
+    updateCharacter.mutate({ accessories: [...current, newAcc] });
+    setNewAccessoryDesc("");
+  }
+
+  function handleRemoveAccessory(index: number) {
+    const current = character?.accessories ?? [];
+    const updated = current.filter((_, i) => i !== index);
+    updateCharacter.mutate({ accessories: updated });
+  }
+
   // Group reference images by angle
   const angleOrder = ["front", "right", "back", "left", "custom"] as const;
   const refByAngle = angleOrder.map((angle) => ({
     angle,
     images: character.referenceImages.filter((img) => img.angle === angle),
   }));
+
+  // Outfit-edited images from referenceImages history
+  const outfitImages = character.referenceImages.filter(
+    (img) => img.label === "outfit edit",
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -354,47 +396,73 @@ export function CharacterDetail({ characterId }: CharacterDetailProps) {
           </div>
         </div>
 
-        {/* L3: Outfit variants (collapsible) */}
+        {/* L3: Outfit Variants (collapsible, enhanced) */}
         {hasRefImages && (
-          <Collapsible className="mt-8">
+          <Collapsible className="mt-8" defaultOpen={outfitImages.length > 0}>
             <CollapsibleTrigger className="flex w-full items-center gap-2 text-left">
               <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform [[data-state=open]>&]:rotate-90" />
+              <Shirt className="h-4 w-4 text-muted-foreground" />
               <h2 className="text-base font-semibold">Outfit Variants</h2>
-              {character.outfitDescription && (
+              {outfitImages.length > 0 && (
                 <span className="rounded-full bg-muted px-2 text-xs text-muted-foreground">
-                  1
+                  {outfitImages.length}
                 </span>
               )}
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-4">
-              <div className="flex gap-3">
-                {/* Current outfit */}
-                {character.outfitDescription && (
-                  <div className="w-[100px] text-center">
-                    {character.referenceImages[0] && (
-                      <img
-                        src={character.referenceImages[0].url}
-                        alt="Current outfit"
-                        className="aspect-[3/4] w-full rounded-md border-2 border-primary object-cover"
-                      />
-                    )}
-                    <p className="mt-1 truncate text-xs text-muted-foreground">
-                      {character.outfitDescription}
-                    </p>
+              {/* Outfit history gallery */}
+              {outfitImages.length > 0 && (
+                <div className="mb-4">
+                  <p className="mb-2 text-xs text-muted-foreground">
+                    Previous outfits (click to set as primary):
+                  </p>
+                  <div className="flex gap-2 overflow-x-auto pb-2">
+                    {outfitImages.map((img, i) => {
+                      const isCurrent = character.thumbnailUrl === img.url;
+                      return (
+                        <button
+                          key={`outfit-${i}`}
+                          type="button"
+                          onClick={() => {
+                            if (!isCurrent) {
+                              updateCharacter.mutate({ thumbnailUrl: img.url });
+                            }
+                          }}
+                          className={`relative shrink-0 overflow-hidden rounded-md border-2 transition-colors ${
+                            isCurrent
+                              ? "border-primary ring-1 ring-primary/30"
+                              : "border-border hover:border-primary/50"
+                          }`}
+                        >
+                          <img
+                            src={img.url}
+                            alt={`Outfit variant ${i + 1}`}
+                            className="h-[120px] w-[90px] object-cover"
+                          />
+                          {isCurrent && (
+                            <span className="absolute bottom-0 left-0 right-0 bg-primary/80 py-0.5 text-center text-[9px] text-primary-foreground">
+                              Current
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
-                )}
+                </div>
+              )}
 
-                {/* New outfit input */}
-                <div className="w-[200px] space-y-2 rounded-md border border-dashed border-border p-3">
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Shirt className="h-3.5 w-3.5" />
-                    New Outfit
-                  </div>
+              {/* New outfit input */}
+              <div className="rounded-md border border-dashed border-border p-3">
+                <div className="mb-2 flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                  <Shirt className="h-3.5 w-3.5" />
+                  Change Outfit
+                </div>
+                <div className="flex gap-2">
                   <input
                     value={outfitInput}
                     onChange={(e) => setOutfitInput(e.target.value)}
-                    placeholder="e.g. red evening dress..."
-                    className="w-full rounded border border-border bg-background px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+                    placeholder="e.g. red evening dress with gold jewelry"
+                    className="flex-1 rounded border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
                     onKeyDown={(e) => {
                       if (e.key === "Enter") handleEditOutfit();
                     }}
@@ -403,25 +471,145 @@ export function CharacterDetail({ characterId }: CharacterDetailProps) {
                     type="button"
                     onClick={handleEditOutfit}
                     disabled={!outfitInput.trim() || editOutfit.isPending}
-                    className="flex w-full items-center justify-center gap-1 rounded bg-blue-500/10 px-2 py-1.5 text-xs text-blue-400 hover:bg-blue-500/20 disabled:opacity-50"
+                    className="flex items-center gap-1.5 rounded bg-blue-500/10 px-3 py-2 text-sm text-blue-400 hover:bg-blue-500/20 disabled:opacity-50"
                   >
                     {editOutfit.isPending ? (
-                      <Loader2 className="h-3 w-3 animate-spin" />
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     ) : (
-                      <Shirt className="h-3 w-3" />
+                      <Wand2 className="h-3.5 w-3.5" />
                     )}
                     Generate — 3 cr
                   </button>
-                  {editOutfit.error && (
-                    <p className="text-[10px] text-red-500">
-                      {editOutfit.error.message}
-                    </p>
-                  )}
                 </div>
+                {editOutfit.error && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {editOutfit.error.message}
+                  </p>
+                )}
+                <p className="mt-1.5 text-[10px] text-muted-foreground">
+                  Uses AI to edit the character&apos;s outfit while preserving their identity.
+                </p>
               </div>
             </CollapsibleContent>
           </Collapsible>
         )}
+
+        {/* L3: Accessories (collapsible) */}
+        <Collapsible className="mt-6" defaultOpen={(character.accessories?.length ?? 0) > 0}>
+          <CollapsibleTrigger className="flex w-full items-center gap-2 text-left">
+            <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform [[data-state=open]>&]:rotate-90" />
+            <Gem className="h-4 w-4 text-muted-foreground" />
+            <h2 className="text-base font-semibold">Accessories</h2>
+            {(character.accessories?.length ?? 0) > 0 && (
+              <span className="rounded-full bg-muted px-2 text-xs text-muted-foreground">
+                {character.accessories.length}
+              </span>
+            )}
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-4">
+            {/* Existing accessories */}
+            {character.accessories.length > 0 && (
+              <div className="mb-3 space-y-2">
+                {character.accessories.map((acc, i) => (
+                  <div
+                    key={`acc-${i}`}
+                    className="flex items-center gap-3 rounded-md border border-border bg-card px-3 py-2"
+                  >
+                    <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] capitalize text-secondary-foreground">
+                      {acc.type}
+                    </span>
+                    <span className="flex-1 text-sm">{acc.description}</span>
+                    {acc.imageUrl && (
+                      <img
+                        src={acc.imageUrl}
+                        alt={acc.description}
+                        className="h-8 w-8 rounded object-cover"
+                      />
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveAccessory(i)}
+                      disabled={updateCharacter.isPending}
+                      className="rounded p-1 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Add new accessory */}
+            <div className="rounded-md border border-dashed border-border p-3">
+              <div className="mb-2 flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                <Plus className="h-3.5 w-3.5" />
+                Add Accessory
+              </div>
+              <div className="flex gap-2">
+                <select
+                  value={newAccessoryType}
+                  onChange={(e) => setNewAccessoryType(e.target.value)}
+                  className="w-28 rounded border border-border bg-background px-2 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                >
+                  {ACCESSORY_TYPES.map((t) => (
+                    <option key={t} value={t}>
+                      {t.charAt(0).toUpperCase() + t.slice(1)}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  value={newAccessoryDesc}
+                  onChange={(e) => setNewAccessoryDesc(e.target.value)}
+                  placeholder="Describe the accessory..."
+                  className="flex-1 rounded border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleAddAccessory();
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={handleAddAccessory}
+                  disabled={!newAccessoryDesc.trim() || updateCharacter.isPending}
+                  className="flex items-center gap-1 rounded bg-primary px-3 py-2 text-sm text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                >
+                  {updateCharacter.isPending ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Plus className="h-3.5 w-3.5" />
+                  )}
+                  Add
+                </button>
+              </div>
+              <p className="mt-1.5 text-[10px] text-muted-foreground">
+                Accessories are included in character descriptions for video generation prompts.
+              </p>
+            </div>
+
+            {/* Apply accessories via outfit edit */}
+            {hasRefImages && character.accessories.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  const accDesc = character.accessories
+                    .map((a) => `${a.type}: ${a.description}`)
+                    .join(", ");
+                  editOutfit.mutate({
+                    instruction: `Add these accessories: ${accDesc}`,
+                  });
+                }}
+                disabled={editOutfit.isPending}
+                className="mt-3 flex items-center gap-1.5 rounded-md bg-blue-500/10 px-3 py-2 text-sm text-blue-400 hover:bg-blue-500/20 disabled:opacity-50"
+              >
+                {editOutfit.isPending ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Wand2 className="h-3.5 w-3.5" />
+                )}
+                Apply Accessories to Image — 3 cr
+              </button>
+            )}
+          </CollapsibleContent>
+        </Collapsible>
 
         {/* L3: Generation history (collapsible) */}
         {character.referenceImages.length > 1 && (

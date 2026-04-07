@@ -102,7 +102,7 @@ export async function POST(
   const validCharacterIds = shot.characterIds.filter((id) => UUID_RE.test(id));
 
   // Load character data (used for both prompt tags and reference images)
-  let charData: { id: string; name: string; description: string; referenceImages: { url: string; angle: "front" | "right" | "back" | "left" | "custom"; label?: string }[] }[] = [];
+  let charData: { id: string; name: string; description: string; accessories: { type: string; description: string; imageUrl?: string }[]; referenceImages: { url: string; angle: "front" | "right" | "back" | "left" | "custom"; label?: string }[] }[] = [];
   if (validCharacterIds.length > 0) {
     charData = await db
       .select()
@@ -110,8 +110,16 @@ export async function POST(
       .where(inArray(characters.id, validCharacterIds));
   }
   const characterTags = charData
-    .map((c) => c.description)
-    .filter((d): d is string => !!d && d.length > 0);
+    .map((c) => {
+      const parts = [c.description].filter(Boolean);
+      if (c.accessories?.length > 0) {
+        parts.push(
+          `wearing ${c.accessories.map((a) => a.description).join(", ")}`,
+        );
+      }
+      return parts.join(", ");
+    })
+    .filter((d) => d.length > 0);
 
   let endpoint: string;
   let input: Record<string, unknown>;
