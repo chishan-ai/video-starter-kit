@@ -2,13 +2,14 @@
 
 import { Mic, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { type Shot } from "@/hooks/use-project";
+import { type Shot, type Character } from "@/hooks/use-project";
 
 interface ShotCardProps {
   shot: Shot;
   isSelected: boolean;
   onClick: () => void;
   onDelete: () => void;
+  characters?: Character[];
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -30,7 +31,13 @@ export function ShotCard({
   isSelected,
   onClick,
   onDelete,
+  characters = [],
 }: ShotCardProps) {
+  // Filter characters that belong to this shot
+  const shotCharacters = characters.filter((c) =>
+    shot.characterIds?.includes(c.id)
+  );
+
   return (
     <div
       role="button"
@@ -116,6 +123,42 @@ export function ShotCard({
         <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed">
           {shot.description || "No description"}
         </p>
+
+        {/* Character avatar stack */}
+        {shotCharacters.length > 0 && (
+          <div className="mt-1.5 flex items-center">
+            {shotCharacters.slice(0, 3).map((char, i) => {
+              const src = char.thumbnailUrl ?? char.referenceImages[0]?.url ?? null;
+              return (
+                <div
+                  key={char.id}
+                  className={cn(
+                    "h-6 w-6 shrink-0 rounded-full border-2 border-background",
+                    i > 0 && "-ml-2"
+                  )}
+                  title={char.name}
+                >
+                  {src ? (
+                    <img
+                      src={src}
+                      alt={char.name}
+                      className="h-full w-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center rounded-full bg-secondary text-[10px] text-secondary-foreground">
+                      {char.name[0]?.toUpperCase() ?? "?"}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            {shotCharacters.length > 3 && (
+              <span className="ml-1 text-[10px] text-muted-foreground">
+                +{shotCharacters.length - 3}
+              </span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

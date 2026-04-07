@@ -265,6 +265,48 @@ export function useCharacters() {
   });
 }
 
+export function useCharacter(id: string) {
+  return useQuery<Character>({
+    queryKey: ["characters", id],
+    queryFn: () => fetchJson(`/api/characters/${id}`),
+    enabled: !!id,
+  });
+}
+
+export function useUpdateCharacter(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      name?: string;
+      gender?: string;
+      description?: string;
+      outfitDescription?: string;
+      referenceImages?: string[];
+      thumbnailUrl?: string | null;
+    }) =>
+      fetchJson<Character>(`/api/characters/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["characters", id] });
+      qc.invalidateQueries({ queryKey: ["characters"] });
+    },
+  });
+}
+
+export function useDeleteCharacter(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      fetchJson(`/api/characters/${id}`, { method: "DELETE" }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["characters"] });
+    },
+  });
+}
+
 export function useCreateCharacter() {
   const qc = useQueryClient();
   return useMutation({

@@ -9,6 +9,7 @@ const updateCharacterSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   gender: z.string().optional(),
   description: z.string().optional(),
+  outfitDescription: z.string().nullable().optional(),
   referenceImages: z.array(z.string()).optional(),
   thumbnailUrl: z.string().nullable().optional(),
 });

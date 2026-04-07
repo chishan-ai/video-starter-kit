@@ -2,12 +2,16 @@
 
 import { useState, useCallback, useMemo } from "react";
 import {
-  ChevronDown,
-  ChevronRight,
   Play,
   Download,
   Sparkles,
 } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import {
   useProject,
   useShots,
@@ -15,6 +19,7 @@ import {
   useSplitScript,
   useGenerateAll,
   useDeleteShot,
+  useCharacters,
 } from "@/hooks/use-project";
 import { useQueryClient } from "@tanstack/react-query";
 import { ScriptEditor } from "./script-editor";
@@ -32,7 +37,6 @@ interface ProjectEditorProps {
 
 export function ProjectEditor({ projectId }: ProjectEditorProps) {
   const [selectedShotId, setSelectedShotId] = useState<string | null>(null);
-  const [scriptExpanded, setScriptExpanded] = useState(true);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
 
@@ -42,6 +46,7 @@ export function ProjectEditor({ projectId }: ProjectEditorProps) {
   const splitScript = useSplitScript(projectId);
   const generateAll = useGenerateAll(projectId);
   const deleteShot = useDeleteShot(projectId);
+  const { data: allCharacters = [] } = useCharacters();
   const qc = useQueryClient();
 
   const selectedShot = shots.find((s) => s.id === selectedShotId) ?? null;
@@ -64,8 +69,6 @@ export function ProjectEditor({ projectId }: ProjectEditorProps) {
       splitScript.mutate(undefined, {
         onSuccess: () => {
           setSelectedShotId(null);
-          // Collapse script after successful split
-          setScriptExpanded(false);
         },
       });
     },
@@ -161,40 +164,38 @@ export function ProjectEditor({ projectId }: ProjectEditorProps) {
 
       {/* Main 3-panel layout */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left Panel: Characters + Script */}
-        <aside className="flex w-56 shrink-0 flex-col border-r border-border bg-muted/20">
-          <div className="flex-1 overflow-y-auto p-3 space-y-4">
-            {/* Characters Section */}
-            <CharacterPanel
-              projectId={projectId}
-              projectCharacterIds={project.characterIds ?? []}
-            />
+        {/* Left Panel: Characters + Script + Music */}
+        <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-muted/20">
+          <div className="flex-1 overflow-y-auto">
+            <Accordion type="multiple" defaultValue={["characters"]} className="px-3 py-2">
+              <AccordionItem value="characters" className="border-none">
+                <AccordionTrigger className="py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:no-underline">
+                  Characters
+                  {(project.characterIds?.length ?? 0) > 0 && (
+                    <span className="ml-auto mr-2 rounded-full bg-muted px-1.5 text-[10px] font-normal normal-case">
+                      {project.characterIds?.length ?? 0}
+                    </span>
+                  )}
+                </AccordionTrigger>
+                <AccordionContent className="pb-2">
+                  <CharacterPanel
+                    projectId={projectId}
+                    projectCharacterIds={project.characterIds ?? []}
+                    projectStyle={project.style}
+                  />
+                </AccordionContent>
+              </AccordionItem>
 
-            {/* Music Section */}
-            <MusicPanel project={project} />
-
-            {/* Script Section (collapsible) */}
-            <div>
-              <button
-                type="button"
-                onClick={() => setScriptExpanded((v) => !v)}
-                className="flex w-full items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground"
-              >
-                {scriptExpanded ? (
-                  <ChevronDown className="h-3 w-3" />
-                ) : (
-                  <ChevronRight className="h-3 w-3" />
-                )}
-                Script
-                {project.script && (
-                  <span className="ml-auto font-normal normal-case">
-                    {project.script.length}c
-                  </span>
-                )}
-              </button>
-
-              {scriptExpanded && (
-                <div className="mt-2">
+              <AccordionItem value="script" className="border-none">
+                <AccordionTrigger className="py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:no-underline">
+                  Script
+                  {project.script && (
+                    <span className="ml-auto mr-2 font-normal normal-case text-[10px]">
+                      {project.script.length}c
+                    </span>
+                  )}
+                </AccordionTrigger>
+                <AccordionContent className="pb-2">
                   <ScriptEditor
                     script={project.script}
                     onSave={handleSaveScript}
@@ -202,9 +203,18 @@ export function ProjectEditor({ projectId }: ProjectEditorProps) {
                     isSplitting={splitScript.isPending}
                     saving={updateProject.isPending}
                   />
-                </div>
-              )}
-            </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="music" className="border-none">
+                <AccordionTrigger className="py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:no-underline">
+                  Music
+                </AccordionTrigger>
+                <AccordionContent className="pb-2">
+                  <MusicPanel project={project} />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </div>
         </aside>
 
@@ -244,6 +254,7 @@ export function ProjectEditor({ projectId }: ProjectEditorProps) {
               onSelectShot={setSelectedShotId}
               onDeleteShot={handleDeleteShot}
               projectId={projectId}
+              characters={allCharacters}
             />
           )}
 

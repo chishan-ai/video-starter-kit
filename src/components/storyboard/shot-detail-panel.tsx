@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useCallback } from "react";
 import { Mic, Volume2, Users, Check } from "lucide-react";
 import {
   useGenerateVideo,
@@ -9,7 +9,20 @@ import {
   useShotVersions,
   useSelectVersion,
   type Shot,
+  type Character,
 } from "@/hooks/use-project";
+import {
+  Popover,
+  PopoverContent,
+  PopoverAnchor,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandInput,
+  CommandList,
+  CommandItem,
+  CommandEmpty,
+} from "@/components/ui/command";
 
 interface ShotDetailPanelProps {
   shot: Shot;
@@ -28,6 +41,8 @@ export function ShotDetailPanel({
 }: ShotDetailPanelProps) {
   const [description, setDescription] = useState(shot.description);
   const [voiceoverText, setVoiceoverText] = useState(shot.voiceoverText ?? "");
+  const [mentionOpen, setMentionOpen] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const generateVideo = useGenerateVideo(projectId, shot.id);
   const generateTTS = useGenerateTTS(projectId, shot.id);
   const { data: allCharacters = [] } = useCharacters();
@@ -59,6 +74,44 @@ export function ShotDetailPanel({
       : [...current, charId];
     onUpdate({ characterIds: updated } as Partial<Shot>);
   }
+
+  const handleDescriptionKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === "@" || (e.key === "2" && e.shiftKey)) {
+        // Will open after the @ character is inserted
+        setTimeout(() => setMentionOpen(true), 0);
+      }
+    },
+    [],
+  );
+
+  const handleMentionSelect = useCallback(
+    (char: Character) => {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+
+      const pos = textarea.selectionStart;
+      const before = description.slice(0, pos);
+      const after = description.slice(pos);
+      const newText = `${before}${char.name} ${after}`;
+      setDescription(newText);
+      setMentionOpen(false);
+
+      // Add character to shot if not already included
+      const current = shot.characterIds ?? [];
+      if (!current.includes(char.id)) {
+        onUpdate({ characterIds: [...current, char.id] } as Partial<Shot>);
+      }
+
+      // Restore focus
+      setTimeout(() => {
+        textarea.focus();
+        const newPos = pos + char.name.length + 1;
+        textarea.setSelectionRange(newPos, newPos);
+      }, 0);
+    },
+    [description, shot.characterIds, onUpdate],
+  );
 
   return (
     <div className="flex h-full flex-col border-l border-border bg-background">
@@ -139,17 +192,66 @@ export function ShotDetailPanel({
           </div>
         )}
 
-        {/* Description */}
+        {/* Description with @ mention */}
         <div>
           <label className="mb-1 block text-xs font-medium text-muted-foreground">
             Description
+            <span className="ml-1.5 font-normal text-muted-foreground/60">
+              (type @ to reference a character)
+            </span>
           </label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={4}
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          />
+          <Popover open={mentionOpen} onOpenChange={setMentionOpen}>
+            <PopoverAnchor asChild>
+              <textarea
+                ref={textareaRef}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                onKeyDown={handleDescriptionKeyDown}
+                rows={4}
+                placeholder="Describe this shot... Type @ to reference a character"
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </PopoverAnchor>
+            <PopoverContent
+              className="w-[var(--radix-popover-trigger-width)] p-0"
+              side="bottom"
+              align="start"
+              onOpenAutoFocus={(e) => e.preventDefault()}
+            >
+              <Command>
+                <CommandInput placeholder="Search characters..." />
+                <CommandList className="max-h-[200px]">
+                  <CommandEmpty>No characters found</CommandEmpty>
+                  {projectChars.map((char) => (
+                    <CommandItem
+                      key={char.id}
+                      value={char.name}
+                      onSelect={() => handleMentionSelect(char)}
+                      className="flex items-center gap-2"
+                    >
+                      {(char.thumbnailUrl ?? char.referenceImages?.[0]?.url) ? (
+                        <img
+                          src={char.thumbnailUrl ?? char.referenceImages[0]?.url}
+                          alt=""
+                          className="h-6 w-6 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-[10px]">
+                          {char.name[0]?.toUpperCase()}
+                        </div>
+                      )}
+                      <span className="text-sm">{char.name}</span>
+                      <span className="ml-auto text-[10px] text-muted-foreground">
+                        {char.referenceImages.length > 0
+                          ? `${char.referenceImages.length} refs`
+                          : "no refs"}
+                      </span>
+                    </CommandItem>
+                  ))}
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
           {isDirty && (
             <button
               type="button"

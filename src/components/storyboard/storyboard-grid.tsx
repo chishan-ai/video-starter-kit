@@ -17,7 +17,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { ShotCard } from "./shot-card";
-import { useCreateShot, useReorderShots, type Shot } from "@/hooks/use-project";
+import { useCreateShot, useReorderShots, type Shot, type Character } from "@/hooks/use-project";
 
 interface StoryboardGridProps {
   shots: Shot[];
@@ -25,6 +25,7 @@ interface StoryboardGridProps {
   onSelectShot: (shotId: string) => void;
   onDeleteShot: (shotId: string) => void;
   projectId: string;
+  characters?: Character[];
 }
 
 export function StoryboardGrid({
@@ -33,6 +34,7 @@ export function StoryboardGrid({
   onSelectShot,
   onDeleteShot,
   projectId,
+  characters = [],
 }: StoryboardGridProps) {
   const createShot = useCreateShot(projectId);
   const reorderShots = useReorderShots(projectId);
@@ -101,6 +103,7 @@ export function StoryboardGrid({
               isSelected={shot.id === selectedShotId}
               onClick={() => onSelectShot(shot.id)}
               onDelete={() => onDeleteShot(shot.id)}
+              characters={characters}
             />
           ))}
 
@@ -128,11 +131,13 @@ function SortableShotCard({
   isSelected,
   onClick,
   onDelete,
+  characters,
 }: {
   shot: Shot;
   isSelected: boolean;
   onClick: () => void;
   onDelete: () => void;
+  characters?: Character[];
 }) {
   const {
     attributes,
@@ -157,6 +162,7 @@ function SortableShotCard({
         isSelected={isSelected}
         onClick={onClick}
         onDelete={onDelete}
+        characters={characters}
       />
     </div>
   );
