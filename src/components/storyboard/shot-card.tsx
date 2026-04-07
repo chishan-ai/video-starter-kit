@@ -45,7 +45,7 @@ export function ShotCard({
       onClick={onClick}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onClick(); }}
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-lg border text-left transition-all cursor-pointer",
+        "group relative flex flex-col overflow-hidden rounded-lg border bg-card text-left transition-all cursor-pointer",
         isSelected
           ? "border-primary ring-2 ring-primary/20"
           : "border-border hover:border-primary/50",

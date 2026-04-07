@@ -79,27 +79,27 @@ body {
     --radius: 0.3rem;
   }
   .dark {
-    --background: 240 20% 3.5%;
-    --background-dark: 240 20% 2.5%;
-    --background-light: 240 15% 6%;
-    --foreground: 0 0% 98%;
-    --card: 240 15% 5%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 15% 5%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 240 10% 12%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 10% 12%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 240 10% 12%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --background: 222 25% 7%;
+    --background-dark: 222 25% 5%;
+    --background-light: 222 20% 11%;
+    --foreground: 210 10% 95%;
+    --card: 222 22% 13%;
+    --card-foreground: 210 10% 95%;
+    --popover: 222 20% 15%;
+    --popover-foreground: 210 10% 95%;
+    --primary: 210 10% 95%;
+    --primary-foreground: 222 25% 7%;
+    --secondary: 222 15% 18%;
+    --secondary-foreground: 210 10% 85%;
+    --muted: 222 15% 16%;
+    --muted-foreground: 215 10% 72%;
+    --accent: 222 15% 18%;
+    --accent-foreground: 210 10% 95%;
+    --destructive: 0 63% 45%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 10% 14%;
-    --input: 240 10% 14%;
-    --ring: 0 0% 83.1%;
+    --border: 222 15% 22%;
+    --input: 222 15% 18%;
+    --ring: 215 15% 70%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -123,11 +123,11 @@ body {
   display: none;
 }
 ::-webkit-scrollbar-track {
-  background-color: rgb(38 38 38);
+  background-color: hsl(222 20% 11%);
 }
 ::-webkit-scrollbar-thumb {
-  background-color: rgb(64 64 64);
+  background-color: hsl(222 15% 22%);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgb(82 82 82);
+  background-color: hsl(222 15% 30%);
 }

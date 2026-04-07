@@ -87,7 +87,7 @@ export function ExportDialog({
         <DialogTitle className="text-base font-semibold">Export Video</DialogTitle>
 
         {/* Shot summary */}
-        <div className="rounded-md border border-border bg-muted/30 p-3">
+        <div className="rounded-md border border-border bg-card p-3">
           <div className="flex items-center justify-between text-sm">
             <span>{shots.length} shots ready</span>
             <span className="text-muted-foreground">

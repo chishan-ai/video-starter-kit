@@ -99,7 +99,7 @@ export function MusicPanel({ project }: MusicPanelProps) {
 
       {/* Audio player */}
       {project.musicUrl && (
-        <div className="mt-2 rounded-md border border-border bg-secondary/30 p-1.5">
+        <div className="mt-2 rounded-md border border-border bg-secondary/50 p-1.5">
           <audio src={project.musicUrl} controls className="h-7 w-full" />
         </div>
       )}

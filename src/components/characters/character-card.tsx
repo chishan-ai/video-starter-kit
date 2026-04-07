@@ -23,7 +23,7 @@ export function CharacterCard({ character }: CharacterCardProps) {
   return (
     <Link
       href={`/characters/${character.id}`}
-      className="group flex flex-col overflow-hidden rounded-lg border border-border transition-shadow hover:shadow-md hover:border-primary/50"
+      className="group flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-shadow hover:shadow-md hover:border-primary/50"
     >
       {/* Thumbnail area */}
       <div className="relative aspect-[4/5] w-full bg-muted">
@@ -35,7 +35,7 @@ export function CharacterCard({ character }: CharacterCardProps) {
           />
         ) : (
           <div className="flex h-full items-center justify-center">
-            <ImageIcon className="h-8 w-8 text-muted-foreground/40" />
+            <ImageIcon className="h-8 w-8 text-muted-foreground/60" />
           </div>
         )}
       </div>

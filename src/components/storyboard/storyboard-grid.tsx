@@ -75,7 +75,7 @@ export function StoryboardGrid({
 
   if (shots.length === 0) {
     return (
-      <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-border">
+      <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-border bg-card/30">
         <div className="text-center">
           <p className="text-sm text-muted-foreground">
             No shots yet. Write a script and click &quot;Split to Shots&quot; to generate
@@ -111,7 +111,7 @@ export function StoryboardGrid({
             type="button"
             onClick={handleAddShot}
             disabled={createShot.isPending}
-            className="flex aspect-video items-center justify-center rounded-lg border-2 border-dashed border-border text-muted-foreground transition-colors hover:border-primary hover:text-primary disabled:opacity-50"
+            className="flex aspect-video items-center justify-center rounded-lg border-2 border-dashed border-border bg-card/50 text-muted-foreground transition-colors hover:border-primary hover:bg-card hover:text-primary disabled:opacity-50"
           >
             <div className="text-center">
               <Plus className="mx-auto h-6 w-6" />

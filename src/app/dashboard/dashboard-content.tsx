@@ -57,7 +57,7 @@ export function DashboardContent() {
               <Link
                 key={project.id}
                 href={`/projects/${project.id}`}
-                className="group rounded-lg border border-border p-4 transition-colors hover:border-primary/50"
+                className="group rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/50 hover:bg-card/80"
               >
                 <div className="flex items-start justify-between">
                   <h3 className="font-medium group-hover:text-primary">

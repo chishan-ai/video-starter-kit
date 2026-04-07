@@ -299,7 +299,7 @@ export function CharacterCreateWizard({
                     </div>
                   </div>
                 ) : (
-                  <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border py-10 transition-colors hover:border-primary/50 hover:bg-muted/30">
+                  <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border py-10 transition-colors hover:border-primary/50 hover:bg-card">
                     {uploading ? (
                       <>
                         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

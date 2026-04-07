@@ -94,7 +94,7 @@ export function CharacterPanel({
 
       {/* Library picker */}
       {showLibrary && availableCharacters.length > 0 && (
-        <div className="space-y-1 rounded-md border border-border bg-muted/30 p-2">
+        <div className="space-y-1 rounded-md border border-border bg-card p-2">
           <p className="text-[10px] text-muted-foreground">
             Link from your library:
           </p>
@@ -141,7 +141,7 @@ function ProjectCharacterCard({
       : "bg-gray-300";
 
   return (
-    <div className="group flex items-start gap-2 rounded-md border border-border bg-background p-2">
+    <div className="group flex items-start gap-2 rounded-md border border-border bg-secondary p-2">
       {/* Avatar */}
       <CharacterAvatar character={character} size="md" />
 
@@ -186,7 +186,7 @@ function ProjectCharacterCard({
             href={`/characters/${character.id}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
+            className="rounded bg-secondary px-1.5 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
           >
             <ExternalLink className="mr-0.5 inline h-2.5 w-2.5" />
             Detail

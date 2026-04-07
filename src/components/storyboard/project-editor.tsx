@@ -143,7 +143,7 @@ export function ProjectEditor({ projectId }: ProjectEditorProps) {
   return (
     <div className="flex h-screen flex-col">
       {/* Header */}
-      <header className="flex items-center justify-between border-b border-border px-4 py-2">
+      <header className="flex items-center justify-between border-b border-border bg-card px-4 py-2">
         <div className="flex items-center gap-3">
           <a
             href="/dashboard"
@@ -165,7 +165,7 @@ export function ProjectEditor({ projectId }: ProjectEditorProps) {
       {/* Main 3-panel layout */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left Panel: Characters + Script + Music */}
-        <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-muted/20">
+        <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-card">
           <div className="flex-1 overflow-y-auto">
             <Accordion type="multiple" defaultValue={["characters"]} className="px-3 py-2">
               <AccordionItem value="characters" className="border-none">
@@ -285,7 +285,7 @@ export function ProjectEditor({ projectId }: ProjectEditorProps) {
       </div>
 
       {/* Bottom Bar */}
-      <footer className="flex items-center justify-between border-t border-border bg-muted/30 px-4 py-2">
+      <footer className="flex items-center justify-between border-t border-border bg-card px-4 py-2">
         <div className="flex items-center gap-4 text-xs text-muted-foreground">
           <span>
             {completedCount}/{shots.length} shots
