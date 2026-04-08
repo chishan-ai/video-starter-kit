@@ -146,7 +146,7 @@ Level 2 — 建立信任后（AI 建议接受率 > 80%）:
   高风险操作仍需确认（视频生成 = 花积分）
 
 Level 3 — 全信任（用户主动选择）:
-  "Direct My Video" — 全流程自动，只在积分消耗前确认
+  "Create My Video" — 全流程自动，只在积分消耗前确认
   类似 Claude Code 的 "bypass permissions" 模式
 
 Anti-pattern: 不管用户信任级别如何，花钱操作永远需要明确确认
@@ -201,7 +201,7 @@ Layer 3 — Full Context (全局决策):
 Layer 4 — Deep Analysis (创作级):
   完整上下文 + 视觉叙事知识 + 平台适应策略 + 用户偏好
   代价: 高（15-30K token）
-  触发: "Direct My Video"、质量问题排查、风格不一致修复
+  触发: "Create My Video"、质量问题排查、风格不一致修复
 ```
 
 ---
@@ -300,7 +300,90 @@ export const promptJournal = pgTable("prompt_journal", {
 
 ---
 
-## 实现 Phases（重新排序，按智能度递增）
+## Wave 1 权威实现规范（2 周 Sprint）
+
+> ⚠️ 本节是唯一的 Wave 1 实现规范，与 UX 设计文档 v3 对齐。
+> 下方的 "远期 Phase 路线图" 保留为 Wave 2-4 的参考蓝图。
+
+### 目标
+
+一键 "Create My Video": 用户写剧本 → 点击一个按钮 → 3-5 分钟后获得视频草稿。
+操作从 ~60 次交互降低到 ~12-20 次。
+
+### 做什么（只做这些）
+
+**1. 增强 splitScript()（1-2 天）**
+- 修改 `src/lib/script-splitter.ts` 的 Gemini prompt
+- 一次调用返回: shots[]（含 description, cameraType, duration, narrativeIntent, cameraReason）
+- 新增脚本类型检测: narrative / tutorial / listicle / showcase / freeform
+- 根据类型选择不同的分析策略和 camera 逻辑
+- DB: `shots` 表增加 `narrativeIntent` text 字段
+
+**2. prompt-composer.ts（1-2 天）**
+- 新建 `src/agent/director/prompt-composer.ts`
+- 基于 splitScript() 返回的增强数据拼接更好的 prompt
+- 纯本地 string 拼接，不额外调用 Gemini API
+- 替代现有 `prompt-enhancer.ts` 的 `buildVideoPrompt()`
+
+**3. "Create My Video" 编排路由（3-4 天）**
+- 新建 `src/app/api/agent/direct/route.ts`
+- 流程: 积分预检 → splitScript() → prompt-composer → 批量 fal.queue.submit()
+- 复用现有 `generate-all` 路由的 fal 提交 + credits 扣费逻辑
+- 轮询进度（复用 `generation/status` 路由），不需要 SSE
+
+**4. 前端 UI（1-2 天）**
+- `script-editor.tsx`: 新增 "Create My Video — {cost} cr" 按钮
+- `project-editor.tsx`: 费用确认 dialog + 轮询进度条
+- 积分不足时按钮变灰 + 提示
+
+**5. 边界处理（0.5-1 天）**
+- 积分预检: estimatedCost > balance 时禁用按钮
+- 部分生成: 积分不够时按顺序生成前 N 个 shot
+- 生成失败: 单 shot 失败 → 跳过继续 / 重试 / 停止（3 选 1）
+- 积分耗尽中途: 保留已生成 shot，提示充值继续
+- 空脚本/极短脚本: 验证最低 50 字符
+
+### 不做什么（明确排除）
+
+| 排除项 | 理由 |
+|--------|------|
+| quality-critic.ts | 没有校准数据，v1 无法准确自评 |
+| creative-memory.ts | 偏好学习是 Wave 4 |
+| trust-engine.ts | 默认 "总是确认花费" 即可 |
+| preference-learner.ts | Wave 4 |
+| prompt-journal.ts | Wave 4 |
+| 独立的 narrative-analyzer.ts | 合并到 splitScript() 一次调用 |
+| SSE streaming | 轮询足够，复杂度低 |
+| Director's Notes UI | Wave 3 |
+| Director Briefing UI | 已删除（Clippy 反模式） |
+
+### 修改文件清单
+
+| 文件 | 变化 |
+|------|------|
+| `src/lib/script-splitter.ts` | 增强 prompt，返回 narrativeIntent + cameraReason |
+| `src/db/schema.ts` | shots 表加 `narrativeIntent` text 字段 |
+| `src/agent/director/prompt-composer.ts` | **新建** — 智能 prompt 拼接 |
+| `src/app/api/agent/direct/route.ts` | **新建** — "Create My Video" 编排 |
+| `src/components/storyboard/script-editor.tsx` | 加 "Create My Video" 按钮 |
+| `src/components/storyboard/project-editor.tsx` | 加费用确认 + 进度 UI |
+| `src/hooks/use-project.ts` | 加 useDirectVideo() mutation |
+
+### 验证标准
+
+1. 同一个剧本，"Create My Video" 全流程跑通
+2. 输出的每个 shot 有 narrativeIntent 和 cameraReason
+3. prompt-composer 的 prompt 比旧 prompt-enhancer 更具叙事针对性
+4. 积分预检正确拦截余额不足
+5. 单 shot 失败不阻塞其余 shot 生成
+6. 3 种脚本类型（narrative / tutorial / listicle）输出不同的 camera 策略
+
+---
+
+## 远期 Phase 路线图（Wave 2-4 参考）
+
+> 以下为完整智能化愿景，按智能度递增排列。
+> 仅在 Wave 1 验证成功后按需实施。
 
 ### Phase 1: 视觉叙事知识注入（1 周）
 
@@ -379,7 +462,7 @@ export const promptJournal = pgTable("prompt_journal", {
 
 ### Phase 4: 导演流水线 + 信任引擎（1-2 周）
 
-**目标**: 一键 "Direct My Video" 全自动流水线，渐进式信任。
+**目标**: 一键 "Create My Video" 全自动流水线，渐进式信任。
 
 **做什么**:
 1. 创建 `director/director-brain.ts` — 编排完整的创作流水线
@@ -394,8 +477,8 @@ export const promptJournal = pgTable("prompt_journal", {
 
 **用户体验变化**:
 ```
-新用户: "Direct My Video" → 分析 → [审批] → 拆分 → [审批] → 生成 → [审批]
-老用户(信任度高): "Direct My Video" → 分析+拆分(自动) → [仅审批积分消耗] → 生成
+新用户: "Create My Video" → 分析 → [审批] → 拆分 → [审批] → 生成 → [审批]
+老用户(信任度高): "Create My Video" → 分析+拆分(自动) → [仅审批积分消耗] → 生成
 ```
 
 ### Phase 5: 平台适配 + Hook 优化（1 周）
@@ -412,25 +495,28 @@ export const promptJournal = pgTable("prompt_journal", {
 
 ## Verification Plan
 
-### Phase 1 验证
+> Wave 1 验证标准见上方 "Wave 1 权威实现规范" 的验证标准章节。
+> 以下为远期 Phase 的验证参考。
+
+### 远期 Phase 1 验证（知识注入）
 1. 用同一个剧本，对比新旧 splitScript 的输出
 2. 新输出每个 shot 应该有 `narrativeIntent` 和 `visualReason`
 3. camera type 和 duration 应该有叙事理由，而非默认值
 4. 对 3 种不同类型的剧本测试（动作/情感/悬疑），验证 AI 给出不同的视觉策略
 
-### Phase 2 验证
+### 远期 Phase 2 验证（智能 Prompt）
 1. 同一个 shot，用新旧 prompt 各生成一次，对比质量
 2. 同一个 shot，分别用 Kling 和 Vidu 生成，验证 prompt 有模型适配差异
 3. 动作场景 vs 对话场景的 prompt 应该有明显不同的侧重点
 
-### Phase 3 验证
+### 远期 Phase 3 验证（Creative Memory）
 1. 第 1 次使用: AI 推荐应该是通用默认
 2. 连续使用 5 次后: AI 推荐应该能反映用户修改模式
 3. 检查 `creative_memories` 表: confidence 随着更多证据逐步增长
 4. 检查 `prompt_journal`: 成功的 prompt 被记录并影响后续推荐
 
-### Phase 4 验证
-1. "Direct My Video" 全流程跑通
+### 远期 Phase 4 验证（导演流水线）
+1. "Create My Video" 全流程跑通（Wave 1 已覆盖基础版）
 2. trust-engine 正确根据历史接受率调整自动化级别
 3. 积分消耗前始终有确认步骤
 
