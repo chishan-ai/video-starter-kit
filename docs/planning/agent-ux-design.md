@@ -1181,13 +1181,13 @@ UI:
 
 ### 修复 5: 无障碍 + 移动端基础考虑
 
-**质量指示器无障碍**:
+**质量指示器无障碍（Wave 2 — 随 Review 模式一起实现）**:
 - 绿/黄点 → 改为图标: ✓ (通过) / ⚠ (需关注)，不仅依赖颜色
 - 所有图标带 aria-label
 
 **移动端**:
-- v1 scope: 仅支持桌面端，移动端显示 "Please use desktop for editing"
-- v2 scope: 考虑简化的移动端 Review 模式（只看结果，不编辑）
+- Wave 1: 仅支持桌面端，移动端显示 "Please use desktop for editing"
+- Wave 3+: 考虑简化的移动端 Review 模式（只看结果，不编辑）
 - 在 CLAUDE.md 中明确记录：Mozoria 是桌面优先产品
 
 ### 修复 6: API 调用成本控制
@@ -1214,7 +1214,7 @@ vs 当前: 1 次 Gemini call + N 次 fal.ai call
 → Gemini API 成本不变！只是 prompt 更智能。
 ```
 
-**Wave 2+ 的缓存策略**:
+**Wave 2+ 缓存策略（Wave 2 实现时考虑）**:
 - Director's Notes: 首次生成后缓存在 shots.visualReason，不重复调用
 - 脚本未修改时，narrative analysis 不重新计算
 
