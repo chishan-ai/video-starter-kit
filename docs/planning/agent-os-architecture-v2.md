@@ -385,7 +385,7 @@ export const promptJournal = pgTable("prompt_journal", {
 > 以下为完整智能化愿景，按智能度递增排列。
 > 仅在 Wave 1 验证成功后按需实施。
 
-### Phase 1: 视觉叙事知识注入（1 周）
+### Wave 2a: 视觉叙事知识注入（1 周）
 
 **目标**: 让 AI 从"机械拆分脚本"变成"理解叙事结构后做创意决策"。
 
@@ -410,7 +410,7 @@ export const promptJournal = pgTable("prompt_journal", {
   - camera/duration 不再是默认值，而是有理由的推荐
 ```
 
-### Phase 2: 智能 Prompt 生成 + 模型适配（1 周）
+### Wave 2b: 智能 Prompt 生成 + 模型适配（1 周）
 
 **目标**: 从静态字符串拼接变成基于叙事意图 + 模型特性的智能 prompt。
 
@@ -433,7 +433,7 @@ export const promptJournal = pgTable("prompt_journal", {
   - 场景类型的最佳实践（动作场景强调 motion 词，对话场景强调 expression 词）
 ```
 
-### Phase 3: Creative Memory + 偏好学习（1 周）
+### Wave 3: Creative Memory + 偏好学习（1 周）
 
 **目标**: AI 导演跨会话记住用户偏好，越用越懂你。
 
@@ -460,7 +460,7 @@ export const promptJournal = pgTable("prompt_journal", {
 第 5 个项目: AI 的推荐已经非常接近用户的最终选择，修改率下降 50%+
 ```
 
-### Phase 4: 导演流水线 + 信任引擎（1-2 周）
+### Wave 4: 导演流水线 + 信任引擎（1-2 周）
 
 **目标**: 一键 "Create My Video" 全自动流水线，渐进式信任。
 
@@ -481,7 +481,7 @@ export const promptJournal = pgTable("prompt_journal", {
 老用户(信任度高): "Create My Video" → 分析+拆分(自动) → [仅审批积分消耗] → 生成
 ```
 
-### Phase 5: 平台适配 + Hook 优化（1 周）
+### Wave 5: 平台适配 + Hook 优化（1 周）
 
 **目标**: YouTube vs TikTok 的自动适配，前 3 秒 hook 优化。
 
@@ -498,24 +498,24 @@ export const promptJournal = pgTable("prompt_journal", {
 > Wave 1 验证标准见上方 "Wave 1 权威实现规范" 的验证标准章节。
 > 以下为远期 Phase 的验证参考。
 
-### 远期 Phase 1 验证（知识注入）
+### Wave 2a 验证（知识注入）
 1. 用同一个剧本，对比新旧 splitScript 的输出
 2. 新输出每个 shot 应该有 `narrativeIntent` 和 `visualReason`
 3. camera type 和 duration 应该有叙事理由，而非默认值
 4. 对 3 种不同类型的剧本测试（动作/情感/悬疑），验证 AI 给出不同的视觉策略
 
-### 远期 Phase 2 验证（智能 Prompt）
+### Wave 2b 验证（智能 Prompt）
 1. 同一个 shot，用新旧 prompt 各生成一次，对比质量
 2. 同一个 shot，分别用 Kling 和 Vidu 生成，验证 prompt 有模型适配差异
 3. 动作场景 vs 对话场景的 prompt 应该有明显不同的侧重点
 
-### 远期 Phase 3 验证（Creative Memory）
+### Wave 3 验证（Creative Memory）
 1. 第 1 次使用: AI 推荐应该是通用默认
 2. 连续使用 5 次后: AI 推荐应该能反映用户修改模式
 3. 检查 `creative_memories` 表: confidence 随着更多证据逐步增长
 4. 检查 `prompt_journal`: 成功的 prompt 被记录并影响后续推荐
 
-### 远期 Phase 4 验证（导演流水线）
+### Wave 4 验证（导演流水线）
 1. "Create My Video" 全流程跑通（Wave 1 已覆盖基础版）
 2. trust-engine 正确根据历史接受率调整自动化级别
 3. 积分消耗前始终有确认步骤
