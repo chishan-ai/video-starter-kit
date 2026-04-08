@@ -675,45 +675,267 @@ Shot 5 (resolution):   Quick analysis → standard prompt
 
 ---
 
-## 实现优先级
+## 自我审视：操作步数分析
 
-### Wave 1（与 Phase 1 对齐）— 可感知智能
-1. `NarrativeAnalysisBar` — Split 后显示叙事分析
-2. `ShotCard` narrativeIntent 标签 — 每个 shot 有叙事意图
-3. `DirectorNotes` — 视觉推理展示
-4. Camera/Duration 知识提示 — 参数选择有理由
+> **核心发现**：上述原则 1-7 的设计增加了 AI 透明度，但没有减少用户操作。
+> 实际上操作步数从 ~60 增加到 ~78。这违背了 "AI 导演" 的核心价值。
+> 以下重构将 "操作简化" 提升为第一优先级。
 
-**用户感受**: "哦，AI 真的理解了我的故事"
+### 操作步数对比
 
-### Wave 2（与 Phase 2 对齐）— 智能生成
-5. `PromptPreview` — 生成前可查看 prompt
-6. ScriptEditor 两步流程 — Analyze → Split
-7. `ScriptPreAnalysis` — 实时脚本分析
+| 流程 | 步骤 | 交互次数 |
+|------|------|---------|
+| **当前** | 写剧本 → Split → 逐个调参 → 逐个生成 → 逐个选版本 | **~60** |
+| **原方案 (v1)** | 同上 + Analyze + 阅读推理 + View Prompt | **~78 (更差)** |
+| **修正方案 (v2)** | 写剧本 → Direct → 审查异常 shots → 微调 | **~12-18** |
 
-**用户感受**: "AI 帮我做了更好的创意决策"
+### 根因分析
 
-### Wave 3（与 Phase 3 对齐）— 学习型 AI
-8. Camera/Model 智能推荐标记
-9. `DirectorBriefing` — 项目记忆简报
-10. 重复生成洞察提示
-11. Footer AI insight
-12. 新项目偏好迁移
+v1 方案犯了一个经典错误：**用 "让用户看到 AI 在做什么" 替代 "让用户少做事"**。
 
-**用户感受**: "AI 越来越懂我了"
+- Narrative Analysis Bar — 好看但用户不需要审查每次 split
+- Director's Notes — 有价值但不应该是默认展示
+- Prompt Preview — Power user 功能，不应在主流程中
+- 两步 Split — 对 80% 的场景增加了无意义的一步
 
-### Wave 4（与 Phase 4 对齐）— 全自动导演
-13. `DirectorDialog` — "Direct My Video" 全流程
-14. `DirectorProgress` — 实时进度
-15. 信任级别设置
-
-**用户感受**: "我只需要写故事，AI 帮我做完剩下的"
+正确的设计应该是：**AI 默认做完全部决策，用户只在不满意时才介入**。
 
 ---
 
-## 设计原则
+## 重构：三层操作模型
 
-1. **渐显式智能**: AI 的存在感从轻到重，不一开始就压倒用户
-2. **可选参与**: 所有 AI 建议都可以忽略，不强制用户接受
-3. **透明推理**: AI 的每个决策都可以展开查看理由
-4. **非阻塞提示**: AI 洞察用 toast/折叠区域，不弹窗打断工作流
-5. **即时可用**: AI 分析在后台进行，用户看到时已完成（或< 1s 加载）
+### Layer 1: Autopilot（主流程 — 80% 使用场景）
+
+**用户操作**: 写剧本 → 一键 → 完成
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Script                                                       │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ The morning sun cast long shadows across the empty      │ │
+│ │ classroom. Akira sat alone, staring at the old photo... │ │
+│ │                                                         │ │
+│ └─────────────────────────────────────────────────────────┘ │
+│ 458 chars · 3 scenes · 2 characters detected                │
+│                                                              │
+│                              [🎬 Create My Video — 210 cr]  │
+│                                                              │
+│  ↑ 这是唯一的主按钮。替代 Split + Generate All              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+点击后发生的事（用户不需要介入）:
+1. AI 分析叙事结构
+2. 设计 7 个 shots（含 camera、duration、narrativeIntent）
+3. 为每个 shot 生成智能 prompt
+4. 按叙事重要性分配模型（高潮用 Kling Pro，过渡用 Vidu Q3）
+5. 批量发起生成
+
+用户看到的：
+
+```
+┌─ 🎬 Creating your video... ─────────────────────────────────┐
+│                                                              │
+│ ✅ Story analyzed — 3 acts, emotional climax at shot 4       │
+│ ✅ 7 shots designed                                          │
+│ 🔄 Generating 3/7 — "Akira confronts the truth"             │
+│                                                              │
+│ [============●                           ] 42%               │
+│ 💰 90/210 credits                        [Pause] [Cancel]    │
+└──────────────────────────────────────────────────────────────┘
+```
+
+完成后，直接进入 **Review 模式**（不是编辑模式）：
+
+```
+┌─ ✅ Video Draft Ready ──────────────────────────────────────┐
+│                                                              │
+│ 7 shots generated · 32s total · 210 credits used             │
+│                                                              │
+│ 🟢🟢🟢🟡🟢🟢🟢    ← AI 质量自评 (🟡 = 可能需要关注)      │
+│  1  2  3  4  5  6  7                                        │
+│                                                              │
+│ Shot 4 may need attention:                                   │
+│   Character consistency lower than expected                  │
+│                                                              │
+│ [Export as-is]  [Review & Tweak]                             │
+└──────────────────────────────────────────────────────────────┘
+```
+
+**操作计数**: 写剧本 + 1 click + 确认 + 可能 review 1-2 shots = **4-8 次交互**
+
+### Layer 2: Review & Tweak（异常处理 — 15% 使用场景）
+
+只有当用户点击 "Review & Tweak" 或点击 🟡 标记的 shot 时，才进入详细视图。
+
+此时才显示原方案中的 AI 推理信息：
+
+```
+┌─ Shot 4 ── 🟡 Needs Review ──────────────────────────────────┐
+│                                                               │
+│ [video preview]                                               │
+│                                                               │
+│ 🎬 Why this might need work:                                  │
+│   AI detected: character face differs from reference          │
+│   Confidence: 0.6 (your threshold: 0.7)                      │
+│                                                               │
+│ Quick fixes:                                                  │
+│ [🔄 Regenerate same prompt]                                   │
+│ [🎯 Regenerate with Ref model (better identity)]              │  ← AI 推荐
+│ [✏️ Manual edit]                                               │
+│                                                               │
+│ ┌─ Director's Notes ────────────────────────── [Show] ┐      │
+│ └─────────────────────────────────────────────────────┘      │
+└───────────────────────────────────────────────────────────────┘
+```
+
+**关键变化**:
+- Director's Notes 默认**隐藏**，只有 "Show" 链接
+- AI 主动诊断问题并推荐修复方案（不是让用户自己找问题）
+- "Quick fixes" 是一键操作，不需要用户手动调参数
+
+**操作计数**: 点击问题 shot → 选择推荐修复 → 等待 = **2 次交互 per shot**
+
+### Layer 3: Manual Control（完全控制 — 5% 使用场景）
+
+只有当用户明确选择 "Manual edit" 时，才展开完整的参数控制面板：
+
+```
+┌─ Shot 4 ── Manual Mode ──────────────────────────────────────┐
+│                                                               │
+│ Description                                                   │
+│ [textarea: editable]                                          │
+│                                                               │
+│ Camera  [wide] [medium] [close-up✨] [overhead] [low-angle]   │
+│         AI recommends close-up for emotional climax           │
+│                                                               │
+│ Duration [====●==========] 6s                                 │
+│          💡 Recommended: 5-7s for this scene type             │
+│                                                               │
+│ Characters  [Akira ✓] [Yuki]                                  │
+│                                                               │
+│ ┌─ Director's Notes ──────────────────────────────────┐      │
+│ │ Narrative Role: Emotional climax                     │      │
+│ │ Visual Strategy: Close-up for micro-expressions...   │      │
+│ └──────────────────────────────────────────────────────┘      │
+│                                                               │
+│ [View Prompt]  [Generate — Kling 3.0 Pro ⭐ — 30 cr]         │
+└───────────────────────────────────────────────────────────────┘
+```
+
+这里才展示原方案的全部 AI 辅助功能：
+- Camera 知识提示
+- Duration 推荐区间
+- Director's Notes（默认展开）
+- Prompt Preview
+- 模型智能排序
+
+---
+
+## 重构后的用户旅程
+
+### 新用户首次使用（~5 分钟 → 成品视频草稿）
+
+```
+1. 粘贴剧本
+2. 点击 "Create My Video"
+3. 确认费用 (210 credits)
+4. 等待 3-5 分钟（看进度条）
+5. 看到结果 + AI 质量评估
+6. 如果满意 → Export（done!）
+7. 如果 1-2 个 shot 不好 → 点击 → 选推荐修复 → 等待
+8. Export
+
+总交互: 4-10 次（vs 当前 60 次）
+```
+
+### 进阶用户（有偏好积累后）
+
+```
+1. 粘贴剧本
+2. 点击 "Create My Video"
+   → AI 自动使用学习到的偏好（模型、时长偏好、风格）
+   → 一行确认: "7 shots · Kling Pro · 210 cr · warm palette"
+3. 等待
+4. 结果通常更好（因为偏好匹配）
+5. Export 或微调 1 个 shot
+
+总交互: 3-6 次
+```
+
+### Power 用户（要完全控制）
+
+```
+1. 写剧本
+2. 可选: "Analyze Script" 查看叙事分析
+3. "Split to Shots" 获得 shot 列表
+4. 逐个 shot 进入 Manual Mode 精调
+5. 逐个 Generate 或 Generate All
+
+总交互: 与当前相同 ~60 次，但每步有 AI 辅助
+```
+
+---
+
+## 修正后的实现优先级
+
+### Wave 1（Phase 1）— 一键出片 ⭐ 最高优先级
+
+> 用户感受: "我只需要写故事，3 分钟后就有视频草稿"
+
+| # | 功能 | 操作减少 |
+|---|------|---------|
+| 1 | **"Create My Video" 主按钮** | 替代 Split + 逐个调参 + 逐个 Generate |
+| 2 | **DirectorProgress 进度面板** | 用户知道在等什么 |
+| 3 | **AI 质量自评 + Review 模式** | 用户只关注问题 shot |
+| 4 | **Quick Fixes（推荐修复）** | 一键修复 vs 手动调参 |
+
+核心指标: **首次出片操作从 60 次 → 5 次**
+
+### Wave 2（Phase 2）— 智能参数默认值
+
+> 用户感受: "AI 选的参数比我手动调的还好"
+
+| # | 功能 | 价值 |
+|---|------|------|
+| 5 | Narrative-aware camera/duration 自动选择 | 替代手动选每个 shot 的 camera |
+| 6 | 模型智能分配（高潮用好模型） | 替代逐个选模型 |
+| 7 | Shot narrativeIntent 标签 | Grid 视图快速理解 |
+
+核心指标: **AI 默认参数被用户接受率 > 70%**
+
+### Wave 3（Phase 3）— 问题诊断智能
+
+> 用户感受: "当 shot 不好时，AI 告诉我为什么并帮我修"
+
+| # | 功能 | 价值 |
+|---|------|------|
+| 8 | 重复生成智能诊断 | 从 "重试" → "换方案" |
+| 9 | Director's Notes（按需查看） | 理解 AI 决策逻辑 |
+| 10 | PromptPreview（高级用户） | 精确控制生成 |
+
+核心指标: **问题 shot 修复从 avg 3 次重试 → 1.5 次**
+
+### Wave 4（Phase 4）— 学习与记忆
+
+> 用户感受: "AI 越来越懂我了"
+
+| # | 功能 | 价值 |
+|---|------|------|
+| 11 | Creative Memory 偏好学习 | 下次出片质量更高 |
+| 12 | DirectorBriefing 项目简报 | 跨会话连续性 |
+| 13 | 新项目偏好迁移 | 跨项目一致性 |
+| 14 | 信任级别自适应 | 确认变少 |
+
+核心指标: **第 5 个项目的首次出片满意率 > 80%**
+
+---
+
+## 修正后的设计原则
+
+1. **操作最小化优先**: 减少操作步数是第一目标，AI 透明度是第二目标
+2. **默认自动化**: AI 做所有决策，用户只审查结果
+3. **异常驱动交互**: 只在出问题时才让用户介入
+4. **渐进暴露复杂度**: Autopilot → Review → Manual 三层，用户按需深入
+5. **推荐优于选择**: AI 给一个推荐方案 + 一键执行，而非展示 5 个选项让用户选
+6. **后台分析、前台结果**: AI 的分析过程在后台完成，用户只看到结果和质量评估
