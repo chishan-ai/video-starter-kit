@@ -303,7 +303,7 @@ export const promptJournal = pgTable("prompt_journal", {
 ## Wave 1 权威实现规范（2 周 Sprint）
 
 > ⚠️ 本节是唯一的 Wave 1 实现规范，与 UX 设计文档 v3 对齐。
-> 下方的 "远期 Phase 路线图" 保留为 Wave 2-4 的参考蓝图。
+> 下方的 "远期路线图" 保留为 Wave 2-5 的参考蓝图。
 
 ### 目标
 
@@ -380,7 +380,7 @@ export const promptJournal = pgTable("prompt_journal", {
 
 ---
 
-## 远期 Phase 路线图（Wave 2-4 参考）
+## 远期路线图（Wave 2-5 参考）
 
 > 以下为完整智能化愿景，按智能度递增排列。
 > 仅在 Wave 1 验证成功后按需实施。
@@ -496,7 +496,7 @@ export const promptJournal = pgTable("prompt_journal", {
 ## Verification Plan
 
 > Wave 1 验证标准见上方 "Wave 1 权威实现规范" 的验证标准章节。
-> 以下为远期 Phase 的验证参考。
+> 以下为远期 Wave 的验证参考。
 
 ### Wave 2a 验证（知识注入）
 1. 用同一个剧本，对比新旧 splitScript 的输出
