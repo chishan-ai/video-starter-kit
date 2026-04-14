@@ -146,6 +146,7 @@ export const shots = pgTable("shots", {
   ttsAudioUrl: text("tts_audio_url"),
   pendingRequestId: text("pending_request_id"),
   pendingModel: text("pending_model"),
+  narrativeIntent: text("narrative_intent"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

@@ -1,12 +1,15 @@
 "use client";
 
+import { Sparkles } from "lucide-react";
 import { useState } from "react";
 
 interface ScriptEditorProps {
   script: string;
   onSave: (script: string) => void;
   onSplit: (currentScript: string) => void;
+  onCreateVideo: () => void;
   isSplitting: boolean;
+  isCreating: boolean;
   saving: boolean;
 }
 
@@ -14,11 +17,16 @@ export function ScriptEditor({
   script: initialScript,
   onSave,
   onSplit,
+  onCreateVideo,
   isSplitting,
+  isCreating,
   saving,
 }: ScriptEditorProps) {
   const [script, setScript] = useState(initialScript);
   const isDirty = script !== initialScript;
+  const wordCount = script.trim().split(/\s+/).length;
+  const estimatedShots = script.trim() ? Math.max(3, Math.min(8, Math.ceil(wordCount / 30))) : 5;
+  const estimatedCost = estimatedShots * 10;
 
   return (
     <div className="space-y-3">
@@ -57,6 +65,21 @@ export function ScriptEditor({
         {script.trim().length > 0 &&
           ` · ~${Math.ceil(script.trim().split(/\s+/).length / 150)} min read`}
       </p>
+
+      <button
+        type="button"
+        onClick={onCreateVideo}
+        disabled={script.trim().length === 0 || isCreating}
+        className="flex w-full flex-col items-center gap-0.5 rounded-md bg-emerald-600 px-4 py-2.5 text-white hover:bg-emerald-700 disabled:opacity-50"
+      >
+        <span className="flex items-center gap-1.5 text-sm font-medium">
+          <Sparkles className="h-4 w-4" />
+          {isCreating ? "Preparing..." : "Create My Video"}
+        </span>
+        <span className="text-[10px] text-emerald-200">
+          ~{estimatedCost} credits est.
+        </span>
+      </button>
     </div>
   );
 }

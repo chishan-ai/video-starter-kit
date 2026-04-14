@@ -32,6 +32,7 @@ export interface Shot {
   voiceoverText: string | null;
   ttsAudioUrl: string | null;
   videoUrl: string | null;
+  narrativeIntent?: string | null;
   createdAt: string;
 }
 
@@ -382,6 +383,39 @@ export function useEditCharacterOutfit(characterId: string) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["characters"] });
       qc.invalidateQueries({ queryKey: ["credits"] });
+    },
+  });
+}
+
+// ── Split preview (no DB commit) ──
+
+export function useSplitPreview(projectId: string) {
+  return useMutation({
+    mutationFn: async () => {
+      const res = await fetch(
+        `/api/projects/${projectId}/split-script?mode=preview`,
+        { method: "POST" },
+      );
+      if (!res.ok) throw new Error((await res.json()).error);
+      return res.json() as Promise<{
+        shots: {
+          order: number;
+          description: string;
+          cameraType: string;
+          duration: number;
+          characterIds: string[];
+          voiceover?: string;
+          narrativeIntent?: string;
+        }[];
+        totalDuration: number;
+        summary: string;
+        scriptType?: string;
+        costEstimate: {
+          shotCount: number;
+          creditsPerShot: number;
+          totalCredits: number;
+        };
+      }>;
     },
   });
 }

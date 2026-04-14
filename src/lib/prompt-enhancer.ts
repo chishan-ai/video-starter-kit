@@ -19,7 +19,7 @@ export const STYLE_MODIFIERS: Record<string, string> = {
     "stylized animation, semi-realistic, artistic rendering, dynamic motion",
 };
 
-const CAMERA_MODIFIERS: Record<string, string> = {
+export const CAMERA_MODIFIERS: Record<string, string> = {
   wide: "wide establishing shot, full scene visible, environmental context",
   medium: "medium shot, waist-up framing, balanced composition",
   "close-up":
