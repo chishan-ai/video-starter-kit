@@ -24,7 +24,8 @@ export function ScriptEditor({
 }: ScriptEditorProps) {
   const [script, setScript] = useState(initialScript);
   const isDirty = script !== initialScript;
-  const estimatedShots = 5;
+  const wordCount = script.trim().split(/\s+/).length;
+  const estimatedShots = script.trim() ? Math.max(3, Math.min(8, Math.ceil(wordCount / 30))) : 5;
   const estimatedCost = estimatedShots * 10;
 
   return (

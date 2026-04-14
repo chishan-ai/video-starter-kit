@@ -1,14 +1,7 @@
 import {
-  type ReferenceImage,
-  STYLE_MODIFIERS,
-  buildReferenceVideoInput,
   buildReferenceVideoPrompt,
   buildVideoPrompt,
 } from "@/lib/prompt-enhancer";
-
-// Re-export for backward compat
-export { STYLE_MODIFIERS, buildReferenceVideoInput, type ReferenceImage };
-export { CAMERA_MODIFIERS } from "@/lib/prompt-enhancer";
 
 const NARRATIVE_MODIFIERS: Record<string, string> = {
   establishing:
@@ -20,7 +13,22 @@ const NARRATIVE_MODIFIERS: Record<string, string> = {
   action_peak: "dynamic action shot, fast-paced, high energy, dramatic angles",
   resolution: "peaceful composition, visual closure, atmospheric calm",
   transition: "smooth transition shot, visual bridge between scenes",
+  detail: "macro detail shot, precise focus, texture emphasis",
+  overview: "wide overview shot, comprehensive scene context",
+  step: "clear instructional framing, focused on action",
+  item: "balanced showcase framing, clean presentation",
+  reveal: "dramatic reveal shot, building anticipation",
+  cta: "direct address framing, engaging call to action",
 };
+
+function appendNarrativeModifier(
+  base: string,
+  narrativeIntent?: string,
+): string {
+  if (!narrativeIntent) return base;
+  const mod = NARRATIVE_MODIFIERS[narrativeIntent];
+  return mod ? `${base}, ${mod}` : base;
+}
 
 export interface ComposeContext {
   shotDescription: string;
@@ -28,7 +36,6 @@ export interface ComposeContext {
   cameraType: string;
   characterTags: string[];
   narrativeIntent?: string;
-  cameraReason?: string;
 }
 
 export interface ReferenceComposeContext {
@@ -38,7 +45,6 @@ export interface ReferenceComposeContext {
   characters: { name: string; description: string }[];
   provider: "kling" | "vidu";
   narrativeIntent?: string;
-  cameraReason?: string;
 }
 
 export function composeVideoPrompt(ctx: ComposeContext): string {
@@ -48,17 +54,7 @@ export function composeVideoPrompt(ctx: ComposeContext): string {
     cameraType: ctx.cameraType,
     characterTags: ctx.characterTags,
   });
-
-  if (!ctx.narrativeIntent) {
-    return base;
-  }
-
-  const narrativeMod = NARRATIVE_MODIFIERS[ctx.narrativeIntent];
-  if (!narrativeMod) {
-    return base;
-  }
-
-  return `${base}, ${narrativeMod}`;
+  return appendNarrativeModifier(base, ctx.narrativeIntent);
 }
 
 export function composeReferenceVideoPrompt(
@@ -71,15 +67,5 @@ export function composeReferenceVideoPrompt(
     characters: ctx.characters,
     provider: ctx.provider,
   });
-
-  if (!ctx.narrativeIntent) {
-    return base;
-  }
-
-  const narrativeMod = NARRATIVE_MODIFIERS[ctx.narrativeIntent];
-  if (!narrativeMod) {
-    return base;
-  }
-
-  return `${base}, ${narrativeMod}`;
+  return appendNarrativeModifier(base, ctx.narrativeIntent);
 }

@@ -54,6 +54,12 @@ const INTENT_COLORS: Record<string, string> = {
   action_peak: "bg-orange-500/20 text-orange-400 border-orange-500/30",
   resolution: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
   transition: "bg-gray-500/20 text-gray-400 border-gray-500/30",
+  detail: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
+  overview: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+  step: "bg-indigo-500/20 text-indigo-400 border-indigo-500/30",
+  item: "bg-violet-500/20 text-violet-400 border-violet-500/30",
+  reveal: "bg-pink-500/20 text-pink-400 border-pink-500/30",
+  cta: "bg-amber-500/20 text-amber-400 border-amber-500/30",
 };
 
 const MODEL_OPTIONS = [
@@ -79,7 +85,6 @@ export function ProjectEditor({ projectId }: ProjectEditorProps) {
   const [exportOpen, setExportOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [selectedModel, setSelectedModel] = useState("vidu-q3-i2v");
-  const [isCommitting, setIsCommitting] = useState(false);
   const prevGeneratingRef = useRef(false);
 
   const { data: project, isLoading: projectLoading } = useProject(projectId);
@@ -93,6 +98,7 @@ export function ProjectEditor({ projectId }: ProjectEditorProps) {
   const { data: creditsData } = useCreditsBalance();
   const qc = useQueryClient();
   const { toast } = useToast();
+  const isCommitting = splitScript.isPending || generateAll.isPending;
 
   const selectedShot = shots.find((s) => s.id === selectedShotId) ?? null;
 
@@ -105,12 +111,7 @@ export function ProjectEditor({ projectId }: ProjectEditorProps) {
 
   const handleSplit = useCallback(
     async (currentScript: string) => {
-      await fetch(`/api/projects/${projectId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ script: currentScript }),
-      });
-      qc.invalidateQueries({ queryKey: ["projects", projectId] });
+      await updateProject.mutateAsync({ script: currentScript });
       splitScript.mutate(undefined, {
         onSuccess: () => {
           setSelectedShotId(null);
@@ -159,7 +160,6 @@ export function ProjectEditor({ projectId }: ProjectEditorProps) {
 
   // Confirm: commit shots → generate all
   const handleConfirmCreate = useCallback(async () => {
-    setIsCommitting(true);
     try {
       // 1. Commit shots to DB
       await splitScript.mutateAsync(undefined);
@@ -168,8 +168,6 @@ export function ProjectEditor({ projectId }: ProjectEditorProps) {
       setConfirmOpen(false);
     } catch {
       // errors shown via mutation error state
-    } finally {
-      setIsCommitting(false);
     }
   }, [splitScript, generateAll, selectedModel]);
 
@@ -369,14 +367,14 @@ export function ProjectEditor({ projectId }: ProjectEditorProps) {
                   Generating... {completedCount} of {shots.length} complete
                 </span>
                 <span className="text-muted-foreground">
-                  {Math.round((completedCount / shots.length) * 100)}%
+                  {Math.round((completedCount / (shots.length || 1)) * 100)}%
                 </span>
               </div>
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                 <div
                   className="h-full rounded-full bg-yellow-500 transition-all duration-500"
                   style={{
-                    width: `${(completedCount / shots.length) * 100}%`,
+                    width: `${(completedCount / (shots.length || 1)) * 100}%`,
                   }}
                 />
               </div>

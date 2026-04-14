@@ -17,6 +17,18 @@ import { eq, inArray } from "drizzle-orm";
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+interface PipelineCharacter {
+  id: string;
+  name: string;
+  description: string;
+  accessories: { type: string; description: string; imageUrl?: string }[];
+  referenceImages: {
+    url: string;
+    angle: "front" | "right" | "back" | "left" | "custom";
+    label?: string;
+  }[];
+}
+
 export interface PipelineShot {
   id: string;
   description: string;
@@ -66,20 +78,7 @@ export async function generateShotsPipeline(
     new Set(pendingShots.flatMap((s) => s.characterIds)),
   ).filter((id) => UUID_RE.test(id));
 
-  const charMap = new Map<
-    string,
-    {
-      id: string;
-      name: string;
-      description: string;
-      accessories: { type: string; description: string; imageUrl?: string }[];
-      referenceImages: {
-        url: string;
-        angle: "front" | "right" | "back" | "left" | "custom";
-        label?: string;
-      }[];
-    }
-  >();
+  const charMap = new Map<string, PipelineCharacter>();
 
   if (allCharacterIds.length > 0) {
     const chars = await db
@@ -118,25 +117,7 @@ export async function generateShotsPipeline(
       const validCharIds = shot.characterIds.filter((id) => UUID_RE.test(id));
       const shotChars = validCharIds
         .map((id) => charMap.get(id))
-        .filter(
-          (
-            c,
-          ): c is {
-            id: string;
-            name: string;
-            description: string;
-            accessories: {
-              type: string;
-              description: string;
-              imageUrl?: string;
-            }[];
-            referenceImages: {
-              url: string;
-              angle: "front" | "right" | "back" | "left" | "custom";
-              label?: string;
-            }[];
-          } => !!c,
-        );
+        .filter((c): c is PipelineCharacter => !!c);
 
       let endpoint: string;
       let input: Record<string, unknown>;
