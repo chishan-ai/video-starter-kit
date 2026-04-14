@@ -1,15 +1,16 @@
-import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { projects, shots, characters } from "@/db/schema";
-import { eq, and, inArray } from "drizzle-orm";
-import { createClient } from "@/lib/supabase/server";
+import { characters, projects, shots } from "@/db/schema";
 import { splitScript } from "@/lib/script-splitter";
+import { createClient } from "@/lib/supabase/server";
+import { and, eq, inArray } from "drizzle-orm";
+import { NextResponse } from "next/server";
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // POST /api/projects/:id/split-script — AI-powered script to storyboard
 export async function POST(
-  _request: Request,
+  request: Request,
   { params }: { params: { id: string } },
 ) {
   const supabase = createClient();
@@ -38,6 +39,8 @@ export async function POST(
     );
   }
 
+  const mode = new URL(request.url).searchParams.get("mode") || "commit";
+
   try {
     // Load character data for prompt enrichment
     let characterData: { id: string; name: string; promptTag: string }[] = [];
@@ -62,6 +65,23 @@ export async function POST(
       characterData,
     );
 
+    // Preview mode: return suggestions without writing to DB
+    if (mode === "preview") {
+      const CREDITS_PER_SHOT = 10; // vidu-q3-i2v default cost
+      return NextResponse.json({
+        shots: result.shots,
+        totalDuration: result.totalDuration,
+        summary: result.summary,
+        scriptType: result.scriptType,
+        costEstimate: {
+          shotCount: result.shots.length,
+          creditsPerShot: CREDITS_PER_SHOT,
+          totalCredits: result.shots.length * CREDITS_PER_SHOT,
+        },
+      });
+    }
+
+    // Commit mode (default): delete old shots and insert new ones
     // Delete existing shots for this project
     await db.delete(shots).where(eq(shots.projectId, params.id));
 
@@ -77,6 +97,7 @@ export async function POST(
           cameraType: shot.cameraType,
           characterIds: shot.characterIds.filter((id) => UUID_RE.test(id)),
           voiceoverText: shot.voiceover,
+          narrativeIntent: shot.narrativeIntent,
         })),
       )
       .returning();
@@ -91,6 +112,7 @@ export async function POST(
       shots: insertedShots,
       totalDuration: result.totalDuration,
       summary: result.summary,
+      scriptType: result.scriptType,
     });
   } catch (err) {
     console.error("[split-script] Error:", err);

@@ -1,11 +1,10 @@
-import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { projects, shots, characters } from "@/db/schema";
-import { eq, and, asc, inArray } from "drizzle-orm";
+import { projects, shots } from "@/db/schema";
+import { CREDIT_COSTS, getBalance } from "@/lib/credits";
+import { generateShotsPipeline } from "@/lib/pipeline";
 import { createClient } from "@/lib/supabase/server";
-import { deductCredits, CREDIT_COSTS, getBalance } from "@/lib/credits";
-import { buildVideoPrompt } from "@/lib/prompt-enhancer";
-import { falServer, getModelEndpoint } from "@/lib/fal-server";
+import { and, asc, eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 
 const generateAllSchema = z.object({
@@ -48,8 +47,6 @@ export async function POST(
   }
 
   const modelKey = parsed.data.model;
-  const isImageToVideo = modelKey.endsWith("-i2v");
-  const endpoint = getModelEndpoint(modelKey);
   const creditCost =
     CREDIT_COSTS[`${modelKey}` as keyof typeof CREDIT_COSTS] ??
     CREDIT_COSTS["vidu-q3-i2v"];
@@ -80,118 +77,16 @@ export async function POST(
     );
   }
 
-  // Collect all character IDs from shots
-  const allCharacterIds = Array.from(
-    new Set(pendingShots.flatMap((s) => s.characterIds)),
-  );
-  let charMap = new Map<
-    string,
-    { description: string; referenceImages: { url: string; angle: "front" | "right" | "back" | "left" | "custom"; label?: string }[] }
-  >();
-  if (allCharacterIds.length > 0) {
-    const chars = await db
-      .select()
-      .from(characters)
-      .where(inArray(characters.id, allCharacterIds));
-    for (const c of chars) {
-      charMap.set(c.id, {
-        description: c.description,
-        referenceImages: c.referenceImages,
-      });
-    }
-  }
-
-  // Submit all shots in parallel
-  const jobs: {
-    shotId: string;
-    requestId?: string;
-    error?: string;
-  }[] = [];
-
-  await Promise.all(
-    pendingShots.map(async (shot) => {
-      // Deduct credits
-      const deduction = await deductCredits(
-        user.id,
-        creditCost,
-        "generation",
-        `Batch generation: ${modelKey}`,
-        shot.id,
-      );
-
-      if (!deduction.success) {
-        jobs.push({ shotId: shot.id, error: "Insufficient credits" });
-        return;
-      }
-
-      // Build prompt
-      const characterTags = shot.characterIds
-        .map((id) => charMap.get(id)?.description)
-        .filter((d): d is string => !!d);
-
-      const enhancedPrompt = buildVideoPrompt({
-        shotDescription: shot.description,
-        style: project.style,
-        cameraType: shot.cameraType,
-        characterTags,
-      });
-
-      // Get reference image
-      let imageUrl: string | undefined;
-      if (isImageToVideo && shot.characterIds.length > 0) {
-        const charData = charMap.get(shot.characterIds[0]);
-        if (charData && charData.referenceImages.length > 0) {
-          imageUrl = charData.referenceImages[0].url;
-        }
-      }
-
-      const input: Record<string, unknown> = { prompt: enhancedPrompt };
-      if (isImageToVideo && imageUrl) {
-        input.image_url = imageUrl;
-      }
-
-      try {
-        const { request_id } = await falServer.queue.submit(endpoint, {
-          input,
-        });
-
-        await db
-          .update(shots)
-          .set({ status: "generating" })
-          .where(eq(shots.id, shot.id));
-
-        jobs.push({ shotId: shot.id, requestId: request_id });
-      } catch (error) {
-        // Refund on failure
-        const { addCredits } = await import("@/lib/credits");
-        await addCredits(
-          user.id,
-          creditCost,
-          "refund",
-          `Refund: batch generation failed`,
-          shot.id,
-        );
-        jobs.push({
-          shotId: shot.id,
-          error: error instanceof Error ? error.message : "Submit failed",
-        });
-      }
-    }),
-  );
-
-  // Update project status
-  await db
-    .update(projects)
-    .set({ status: "generating", updatedAt: new Date() })
-    .where(eq(projects.id, params.id));
-
-  const submitted = jobs.filter((j) => j.requestId);
-  const failed = jobs.filter((j) => j.error);
+  const result = await generateShotsPipeline({
+    userId: user.id,
+    projectId: params.id,
+    modelKey,
+    shots: pendingShots,
+    project: { id: project.id, style: project.style },
+  });
 
   return NextResponse.json({
     model: modelKey,
-    submitted: submitted.length,
-    failed: failed.length,
-    jobs,
+    ...result,
   });
 }
